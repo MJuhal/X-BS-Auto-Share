@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuración inicial | Panel de redes</title>
+<style>
+@font-face { font-family: "Geist"; src: url(fonts/Geist-Variable.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
+:root { --fondo: #FBF8FA; --sup: #FFFFFF; --sup2: #F4EEF3; --borde: #E5DCE3; --campo: #8B7C88; --texto: #1D1720; --suave: #675B6C; --acento: #B3305F; --acento-txt: #FFFFFF; --ok: #1E7449; --ok-bg: #E3F4EA; --error: #B42318; --error-bg: #FDE8E6; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --fondo: #15111A; --sup: #1F1926; --sup2: #2A2232; --borde: #3A3044; --campo: #857793; --texto: #F3EDF5; --suave: #B3A6B9; --acento: #F28DB2; --acento-txt: #2A0F1C; --ok: #7BD8A6; --ok-bg: #173327; --error: #FF8E86; --error-bg: #3D1A19; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--texto); font: 16px/1.5 "Geist", system-ui, sans-serif; }
+.env { max-width: 1040px; margin: 0 auto; padding: 32px 20px 80px; }
+h1 { font-size: 26px; line-height: 1.2; margin: 0 0 6px; letter-spacing: -.02em; }
+h2 { font-size: 20px; margin: 0 0 6px; letter-spacing: -.01em; }
+.sub { color: var(--suave); margin: 0 0 20px; max-width: 68ch; }
+.agente { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 16px 18px; border: 1px solid var(--borde); border-radius: 12px; background: var(--sup2); margin-bottom: 28px; }
+.agente p { margin: 0; max-width: 62ch; }
+.agente small, .ayuda { color: var(--suave); font-size: 14px; }
+.cuerpo { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 28px; align-items: start; }
+nav { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 20px; }
+nav button { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent; color: var(--texto); font: inherit; font-size: 15px; text-align: left; cursor: pointer; }
+nav button[aria-current] { background: var(--sup2); font-weight: 600; }
+nav i { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--campo); font: 600 12px/19px "Geist", system-ui; text-align: center; font-style: normal; }
+nav .ok i { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+section { background: var(--sup); border: 1px solid var(--borde); border-radius: 16px; padding: 24px; }
+label { display: block; font-weight: 550; font-size: 15px; margin: 16px 0 4px; }
+input:not([type=radio]):not([type=checkbox]), select { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--campo); border-radius: 8px; background: var(--fondo); color: var(--texto); font: inherit; }
+.op { display: flex; gap: 10px; align-items: center; min-height: 44px; margin: 4px 0; font-weight: 400; }
+.op input { width: 18px; height: 18px; accent-color: var(--acento); }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid var(--campo); background: var(--sup); color: var(--texto); font: 550 15px "Geist", system-ui; cursor: pointer; text-decoration: none; white-space: nowrap; }
+.btn.p { background: var(--acento); border-color: var(--acento); color: var(--acento-txt); }
+.btn:disabled { opacity: .55; cursor: default; }
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.fila { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+.msg { margin: 16px 0 0; padding: 10px 14px; border-radius: 10px; font-size: 15px; overflow-wrap: anywhere; }
+.msg.ok { background: var(--ok-bg); color: var(--ok); } .msg.error { background: var(--error-bg); color: var(--error); }
+.msg:empty { display: none; }
+ul.req { list-style: none; margin: 16px 0 0; padding: 0; }
+ul.req li { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--borde); flex-wrap: wrap; }
+ul.req b { min-width: 210px; font-weight: 550; } ul.req span { color: var(--suave); font-size: 14px; overflow-wrap: anywhere; }
+.si { color: var(--ok) !important; } .no { color: var(--error) !important; }
+ol { padding-left: 20px; margin: 10px 0 0; } ol li { margin: 4px 0; }
+a { color: var(--acento); }
+@media (max-width: 760px) { .cuerpo { grid-template-columns: minmax(0, 1fr); gap: 16px; } nav { position: static; flex-direction: row; overflow-x: auto; padding-bottom: 6px; } nav button { white-space: nowrap; } section { padding: 18px 16px; } .env { padding: 22px 16px 60px; } ul.req b { min-width: 0; width: 100%; } }
+</style>
+</head>
+<body>
+<div class="env">
+  <h1>Configuración inicial</h1>
+  <p class="sub">Completá los pasos para dejar el sistema funcionando con tus cuentas. Cada paso se prueba y se guarda: podés cerrar y seguir después. Nada se publica desde acá.</p>
+  <div class="agente"><p><b>¿Trabajás con Codex u otra IA?</b><br><small>Copiá este texto y pegáselo a tu agente: le explica el proyecto, las reglas y cómo ayudarte. No incluye claves.</small></p><button class="btn p" id="copiar">Copiar prompt para mi IA</button></div>
+  <div class="cuerpo"><nav id="nav" aria-label="Pasos"></nav><section id="paso" aria-live="polite"></section></div>
+</div>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+const api = async (a, d = {}) => { const r = await fetch(`/api/asis_${a}`, { method: "POST", headers: { "Content-Type": "application/json", "x-panel": "1" }, body: JSON.stringify(d) }); const j = await r.json(); if (!r.ok) throw new Error(j.error || "No se pudo completar."); return j; };
+let E = null, actual = "req", canales = null;
+const campo = (id, t, { v = "", ph = "", ayuda = "", tipo = "text" } = {}) => `<label for="${id}">${t}</label><input id="${id}" name="${id}" type="${tipo}" value="${esc(v)}" placeholder="${esc(ph)}" ${tipo === "password" ? 'autocomplete="new-password" spellcheck="false"' : ""} ${ayuda ? `aria-describedby="${id}-a"` : ""}>${ayuda ? `<div class="ayuda" id="${id}-a">${ayuda}</div>` : ""}`;
+const PASOS = [
+  ["req", "Programas", () => `<h2>Programas necesarios</h2><p class="ayuda">Lo que falte se instala una sola vez. Después tocá Volver a revisar.</p><ul class="req">${E.requisitos.map((r) => `<li><b>${esc(r.nombre)}</b><span class="${r.ok ? "si" : r.opcional ? "" : "no"}">${r.ok ? "Listo" : r.opcional ? "Opcional" : "Falta"}</span><span>${esc(r.detalle)}</span>${!r.ok && r.link ? `<a href="${esc(r.link)}" target="_blank" rel="noopener">Descargar</a>` : ""}</li>`).join("")}</ul><div class="fila"><button class="btn" data-recargar>Volver a revisar</button><button class="btn p" data-ir="ia">Continuar</button></div>`],
+  ["ia", "Inteligencia artificial", () => `<h2>Inteligencia artificial</h2><p class="ayuda">Escribe y revisa los textos mirando cada imagen. Usa tu propia sesión. La prueba hace una consulta corta y puede tardar un minuto.</p><form data-accion="ia"><fieldset style="border:0;padding:0;margin:12px 0 0"><legend class="ayuda">Elegí cuál usar</legend>${[["codex", "Codex (OpenAI)"], ["claude", "Claude Code"]].map(([v, t]) => `<label class="op"><input type="radio" name="proveedor" value="${v}" ${E.proveedor === v ? "checked" : ""}> ${t}</label>`).join("")}</fieldset><p class="ayuda">Codex: instalalo con <code>npm install -g @openai/codex</code> y entrá con <code>codex login</code> en una terminal.</p><div class="fila"><button class="btn p">Guardar y probar</button></div></form>`],
+  ["marca", "Marca", () => `<h2>Tu marca</h2><form data-accion="marca">${campo("nombre", "Nombre de la marca", { v: E.marca.nombre })}${campo("x", "Usuario de X (opcional)", { v: E.marca.x, ph: "@usuario" })}${campo("patreon", "Link de Patreon u otra página (opcional)", { v: E.marca.patreon, ph: "https://", ayuda: "Sin link, ningún post lleva enlace." })}${campo("texto_marca", "Texto de la marca de agua", { v: E.marca.texto_marca, ph: "patreon.com/tumarca", ayuda: "Se pone en cada imagen, abajo y semitransparente." })}${campo("zona", "Zona horaria de tus horarios", { v: E.marca.zona, ph: "America/New_York" })}${campo("excluidos", "Personajes que no querés publicar (opcional)", { v: E.marca.excluidos, ph: "separados por coma" })}<div class="fila"><button class="btn p">Guardar</button></div></form>`],
+  ["carpetas", "Carpetas", () => `<h2>Carpeta de imágenes</h2><p class="ayuda">Elegí una carpeta fuera del proyecto. Adentro se crean Backlog (imágenes para publicar), Lotes y Banco. No se mueve ni se borra nada.</p><form data-accion="carpetas">${campo("carpeta", "Ruta completa", { v: (E.carpeta || "").replace(/\/interno$/, ""), ph: "D:\\Posts" })}<p class="ayuda">Nombre de las imágenes: <code>personaje-sfw-cute-1.png</code>.</p><div class="fila"><button class="btn p">Crear carpetas</button></div></form>`],
+  ["buffer", "Buffer", () => `<h2>Vincular Buffer</h2><p class="ayuda">Buffer programa los posts en X y Bluesky. La clave queda solo en esta PC.</p><ol class="ayuda"><li>En <a href="https://buffer.com" target="_blank" rel="noopener">Buffer</a>, conectá tus cuentas de X y Bluesky.</li><li>Entrá a <a href="https://publish.buffer.com/settings/api" target="_blank" rel="noopener">Settings, API</a> y creá una clave.</li><li>Pegala acá y elegí los canales.</li></ol><form data-accion="buffer">${campo("clave", "Clave de la API de Buffer", { tipo: "password", ph: E.buffer.clave ? "Cargada. Pegá otra solo para cambiarla" : "" })}<div class="fila"><button class="btn ${canales ? "" : "p"}">Buscar mis canales</button></div></form>${canales ? `<form data-accion="canales">${[["x", "X", E.buffer.x], ["bsky", "Bluesky", E.buffer.bsky]].map(([id, red]) => `<label for="c-${id}">Canal de ${red}</label><select id="c-${id}" name="${id}"><option value="">No usar</option>${canales.filter((c) => c.red === red).map((c) => `<option value="${esc(c.id)}" ${c.desconectado ? "disabled" : ""}>${esc(c.nombre)} (${esc(c.cuenta)})${c.desconectado ? " | desconectado" : ""}</option>`).join("")}</select>`).join("")}<div class="fila"><button class="btn p">Vincular canales</button></div></form>` : E.hecho.buffer ? `<p class="msg ok">Vinculado: ${esc([E.buffer.x && `X @${E.buffer.x}`, E.buffer.bsky && `Bluesky ${E.buffer.bsky}`].filter(Boolean).join(" y "))}</p>` : ""}`],
+  ["imagenes", "Alojamiento", () => `<h2>Alojamiento de imágenes</h2><p class="ayuda">Buffer no recibe archivos: necesita una dirección pública de cada imagen. Se usa un proyecto propio de Supabase (tiene plan gratis).</p><ol class="ayuda"><li>Creá un proyecto nuevo en <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">Supabase</a>, solo para esto.</li><li>En Project Settings, copiá la dirección del proyecto y la clave secreta.</li><li>Pegalas acá: el sistema crea el espacio para las imágenes y lo prueba.</li></ol><form data-accion="imagenes">${campo("url", "Dirección del proyecto", { ph: E.supabase.url ? "Cargada" : "https://abcd1234.supabase.co" })}${campo("clave", "Clave secreta", { tipo: "password", ph: E.supabase.clave ? "Cargada. Pegá otra solo para cambiarla" : "" })}${campo("bucket", "Nombre del espacio", { v: E.supabase.bucket || "x-bs-auto" })}<div class="fila"><button class="btn p">Guardar y probar</button></div></form>`],
+  ["horarios", "Horarios", () => `<h2>Horarios</h2><p class="ayuda">Todos los días, en ${esc(E.marca.zona)}. Para una red que no uses, dejá el valor como está.</p><form data-accion="horarios">${campo("hx", "X", { v: E.horarios.x, ph: "20:00" })}${campo("hb", "Bluesky", { v: E.horarios.bsky, ph: "10:00, 15:00, 20:00" })}<div class="fila"><button class="btn p">Guardar</button></div></form>`],
+  ["pixiv", "Pixiv (opcional)", () => `<h2>Pixiv (opcional)</h2><p class="ayuda">Pixiv no permite programar: el sistema completa el formulario en un Chrome propio y vos confirmás cada post. La sesión la iniciás vos desde el panel.</p><form data-accion="pixiv"><label class="op"><input type="checkbox" name="activa" ${E.pixiv.activa ? "checked" : ""}> Usar Pixiv</label>${campo("usuario_id", "ID de tu cuenta", { v: E.pixiv.usuario_id, ph: "número de la dirección de tu perfil" })}${campo("ph", "Horarios (hora de Japón)", { v: E.pixiv.horas })}<div class="fila"><button class="btn p">Guardar</button></div></form>`],
+  ["fin", "Terminar", () => `<h2>Terminar</h2>${E.faltan.length ? `<p>Falta completar: <b>${esc(E.faltan.join(", "))}</b>.</p>` : `<p>Está todo listo. La publicación automática queda apagada: la encendés desde el panel cuando quieras.</p>`}<p class="ayuda">Importante: si otra PC publica en las mismas cuentas, los posts pueden repetirse. Usá cuentas propias.</p><div class="fila"><button class="btn p" data-terminar ${E.faltan.length ? "disabled" : ""}>Abrir el panel</button></div>`],
+];
+function pintar(msg = null) {
+  $("#nav").innerHTML = PASOS.map(([id, t], i) => { const ok = id === "req" ? E.requisitos.every((r) => r.ok || r.opcional) : id === "fin" ? E.configurado : E.hecho[id]; return `<button data-ir="${id}" class="${ok ? "ok" : ""}" ${id === actual ? 'aria-current="step"' : ""}><i aria-hidden="true">${ok ? "✓" : i + 1}</i>${t}</button>`; }).join("");
+  $("#paso").innerHTML = PASOS.find(([id]) => id === actual)[2]() + `<div class="msg ${msg?.[0] ?? ""}" role="status">${esc(msg?.[1] ?? "")}</div>`;
+}
+async function cargar(msg) { E = await api("estado"); pintar(msg); }
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.ir) { actual = b.dataset.ir; pintar(); }
+  else if ("recargar" in b.dataset) cargar();
+  else if ("terminar" in b.dataset) { try { await api("terminar"); location.href = "/"; } catch (x) { pintar(["error", x.message]); } }
+  else if (b.id === "copiar") { try { await navigator.clipboard.writeText(E.prompt); b.textContent = "Copiado"; } catch { window.open("/prompt.txt", "_blank", "noopener"); } setTimeout(() => (b.textContent = "Copiar prompt para mi IA"), 2500); }
+});
+document.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const f = e.target, a = f.dataset.accion, d = Object.fromEntries(new FormData(f)), b = f.querySelector("button"), t = b.textContent;
+  if (a === "pixiv") { d.activa = !!d.activa; d.horas = d.ph; }
+  if (a === "horarios") { d.x = d.hx; d.bsky = d.hb; }
+  b.disabled = true; b.textContent = "Probando…";
+  try {
+    const r = await api(a, d);
+    if (r.canales) { canales = r.canales; await cargar(r.canales.length ? ["ok", "Clave correcta. Elegí los canales."] : ["error", "La clave funciona, pero no hay cuentas de X ni Bluesky conectadas en Buffer."]); return; }
+    if (a === "canales") canales = null;
+    await cargar(["ok", r.mensaje]);
+  } catch (x) { const caja = $("#paso > .msg"); caja.className = "msg error"; caja.textContent = x.message; b.disabled = false; b.textContent = t; }
+});
+cargar().catch((x) => { $("#paso").textContent = x.message; });
+</script>
+</body>
+</html>

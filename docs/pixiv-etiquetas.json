@@ -1,0 +1,189 @@
+{
+  "_nota": "Etiquetas fijas de Pixiv por personaje. Medido en Pixiv el 2026-11-20 (obras para todo público): en LoL manda el nombre en inglés (Ahri 5.500 obras, アーリ 600) y las variantes \"(LoL)\" casi no existen (カタリナ(LoL), ナミ(LoL), オーロラ(LoL): 0 obras). Si el nombre japonés choca con otra serie (ナミ de One Piece, カタリナ de Hamefura, オーロラ), no se usa. Cada post nuevo guarda sus etiquetas de personaje (etiquetas_personaje) al generarse; los lotes generados antes usan \"personajes_anteriores\" (así su aprobación no cambia). Máximo 10 por obra: 3 de la franquicia + 2 o 3 del personaje + AIイラスト + hasta 3 descriptivas. Descriptivas de tamaño medio (10.000 a 250.000 obras): las enormes (女の子, ファンタジー) tapan el post en minutos y las mínimas (大人の女性, 胸元, 誘惑) no las busca nadie.",
+  "franquicia": [
+    "League_of_Legends",
+    "リーグ・オブ・レジェンド",
+    "英雄联盟"
+  ],
+  "ia": "AIイラスト",
+  "personajes": {
+    "ahri": [
+      "Ahri",
+      "アーリ",
+      "阿狸"
+    ],
+    "aurora": [
+      "Aurora",
+      "阿萝拉"
+    ],
+    "evelynn": [
+      "Evelynn",
+      "イブリン",
+      "伊芙琳"
+    ],
+    "katarina": [
+      "Katarina",
+      "卡特琳娜"
+    ],
+    "leblanc": [
+      "LeBlanc",
+      "ルブラン",
+      "乐芙兰"
+    ],
+    "nami": [
+      "Nami",
+      "Nami(LoL)",
+      "娜美"
+    ],
+    "soraka": [
+      "Soraka",
+      "ソラカ",
+      "索拉卡"
+    ],
+    "sona": [
+      "Sona",
+      "ソナ",
+      "娑娜"
+    ],
+    "kayle": [
+      "Kayle",
+      "ケイル",
+      "凯尔"
+    ],
+    "nidalee": [
+      "Nidalee",
+      "ニダリー",
+      "奈德丽"
+    ],
+    "irelia": [
+      "Irelia",
+      "イレリア",
+      "艾瑞莉娅"
+    ],
+    "fiora": [
+      "Fiora",
+      "フィオラ",
+      "菲奥娜"
+    ]
+  },
+  "personajes_anteriores": {
+    "ahri": [
+      "アーリ",
+      "Ahri",
+      "阿狸"
+    ],
+    "aurora": [
+      "オーロラ(LoL)",
+      "Aurora",
+      "阿萝拉"
+    ],
+    "evelynn": [
+      "イブリン",
+      "Evelynn",
+      "伊芙琳"
+    ],
+    "katarina": [
+      "カタリナ(LoL)",
+      "Katarina",
+      "卡特琳娜"
+    ],
+    "leblanc": [
+      "ルブラン",
+      "LeBlanc",
+      "乐芙兰"
+    ],
+    "nami": [
+      "ナミ(LoL)",
+      "Nami",
+      "娜美"
+    ],
+    "soraka": [
+      "ソラカ",
+      "Soraka",
+      "索拉卡"
+    ],
+    "sona": [
+      "ソナ",
+      "Sona",
+      "娑娜"
+    ],
+    "kayle": [
+      "ケイル",
+      "Kayle",
+      "凯尔"
+    ],
+    "nidalee": [
+      "ニダリー",
+      "Nidalee",
+      "奈德丽"
+    ],
+    "irelia": [
+      "イレリア",
+      "Irelia",
+      "艾瑞莉娅"
+    ],
+    "fiora": [
+      "フィオラ",
+      "Fiora",
+      "菲奥娜"
+    ]
+  },
+  "descriptivas": [
+    "魅惑のふともも",
+    "極上の女体",
+    "巨乳",
+    "谷間",
+    "美脚",
+    "太もも",
+    "美女",
+    "セクシー",
+    "ボディスーツ",
+    "ハイレグ",
+    "水着",
+    "ドレス",
+    "ニーハイ",
+    "銀髪",
+    "ピンク髪",
+    "褐色",
+    "獣耳",
+    "狐娘",
+    "魔女",
+    "fantasy",
+    "K/DA",
+    "スターガーディアン"
+  ],
+  "afines": {
+    "overwatch": {
+      "nombre": "Overwatch",
+      "tags": [
+        "オーバーウォッチ",
+        "Overwatch",
+        "守望先锋"
+      ]
+    },
+    "valorant": {
+      "nombre": "Valorant",
+      "tags": [
+        "VALORANT",
+        "ヴァロラント",
+        "无畏契约"
+      ]
+    },
+    "arcane": {
+      "nombre": "Arcane",
+      "tags": [
+        "Arcane",
+        "アーケイン",
+        "双城之战"
+      ]
+    },
+    "warcraft": {
+      "nombre": "World of Warcraft",
+      "tags": [
+        "WorldofWarcraft",
+        "warcraft",
+        "魔兽世界"
+      ]
+    }
+  }
+}

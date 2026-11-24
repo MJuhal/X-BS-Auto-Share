@@ -1,0 +1,25 @@
+{
+  "configurado": false,
+  "ia": { "proveedor": "codex" },
+  "contenido": "",
+  "publicaciones": "",
+  "lotes": "",
+  "personajes_excluidos": [],
+  "marca": { "nombre": "", "x": "", "patreon": "", "bluesky": "" },
+  "lote": { "cantidad": 10, "con_link_patreon": 1, "con_link_in_bio": 4, "siempre_cta": false },
+  "publicacion": {
+    "agenda": { "lun": ["20:00"], "mar": ["20:00"], "mie": ["20:00"], "jue": ["20:00"], "vie": ["20:00"], "sab": ["20:00"], "dom": ["20:00"] },
+    "cambios_agenda": [],
+    "separacion_min": 180,
+    "zona": "America/New_York",
+    "horas": ["20:00"],
+    "carpeta_supabase": "x-bs-auto",
+    "imagenes_ia": true,
+    "canal": { "nombre": "", "servicio": "twitter", "buffer_id": "" },
+    "bluesky": { "activa": false, "desde": null, "desfase_min": 0, "canal": { "servicio": "bluesky", "handle": "", "did": "", "buffer_id": "" } }
+  },
+  "automatizacion": { "activa": false, "armar_lotes": false, "generar_si_quedan": 6 },
+  "hashtags": { "lista": ["#animegirl", "#waifu", "#AIArtwork"] },
+  "marca_agua": { "texto": "", "imagen": "config/marca/marca.png", "ancho": 0.3, "opacidad": 0.75, "ya_marcadas": [] },
+  "pixiv": { "activa": false, "usuario_id": "", "horas": ["21:00"], "zona": "Asia/Tokyo", "posts_por_lote": 9, "modo": "confirmar", "generar_si_quedan": 6 }
+}

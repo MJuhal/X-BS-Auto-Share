@@ -1,0 +1,16 @@
+{
+  "name": "x-bs-auto-share",
+  "private": true,
+  "type": "module",
+  "description": "Motor y panel local para preparar, aprobar y programar posts en X, Bluesky y Pixiv",
+  "dependencies": {
+    "puppeteer-core": "^24.43.1"
+  },
+  "engines": {
+    "node": ">=21"
+  },
+  "scripts": {
+    "panel": "node herramientas/panel/servidor.mjs",
+    "test": "node --test pruebas/pruebas.mjs"
+  }
+}

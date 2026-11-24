@@ -1,0 +1,1643 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23B3305F%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-size=%2716%27 text-anchor=%27middle%27 fill=%27white%27 font-family=%27sans-serif%27 font-weight=%27700%27%3EFI%3C/text%3E%3C/svg%3E">
+<title>{{MARCA}} | Panel de redes</title>
+<style>
+@font-face { font-family: "Geist"; src: url(fonts/Geist-Variable.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url(fonts/GeistMono-Variable.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
+:root {
+  --fondo: #FBF8FA; --sup: #FFFFFF; --sup2: #F4EEF3; --borde: #E5DCE3; --texto: #1D1720; --suave: #675B6C;
+  --acento: #B3305F; --acento-txt: #FFFFFF; --ok: #1E7449; --ok-bg: #E3F4EA; --aviso: #8A5A00; --aviso-bg: #FBF0D9;
+  --error: #B42318; --error-bg: #FDE8E6; --sombra: 0 1px 2px rgb(29 23 32 / .06), 0 4px 16px rgb(29 23 32 / .06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --fondo: #15111A; --sup: #1F1926; --sup2: #2A2232; --borde: #3A3044; --texto: #F3EDF5; --suave: #B3A6B9;
+    --acento: #F28DB2; --acento-txt: #2A0F1C; --ok: #7BD8A6; --ok-bg: #173327; --aviso: #F2C46B; --aviso-bg: #382B12;
+    --error: #FF8E86; --error-bg: #3D1A19; --sombra: 0 1px 2px rgb(0 0 0 / .3), 0 6px 20px rgb(0 0 0 / .25); color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--texto); font: 15px/1.5 "Geist", system-ui, sans-serif; }
+.mono { font-family: "Geist Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+/* Fechas, números y contadores: misma tipografía que el resto, con cifras alineadas (la mono deja espacios raros). */
+.dato b.mono, .cuando.mono, .contador.mono, .metricas b.mono, .pub .cuando { font-family: inherit; font-variant-numeric: tabular-nums; }
+button, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.envoltura { max-width: 1440px; margin: 0 auto; padding: 0 24px 64px; }
+header { display: flex; align-items: center; gap: 16px; padding: 20px 0; flex-wrap: wrap; }
+h1 { font-size: 22px; letter-spacing: -0.02em; line-height: 1.2; margin: 0; font-weight: 650; }
+h1 span { color: var(--suave); font-weight: 450; }
+header .der { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.btn { white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; min-height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--borde); background: var(--sup); cursor: pointer; font-weight: 550; font-size: 14px; }
+.btn:hover:not(:disabled) { background: var(--sup2); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.principal { background: var(--acento); color: var(--acento-txt); border-color: transparent; }
+.btn.principal:hover:not(:disabled) { filter: brightness(1.08); background: var(--acento); }
+/* Secundario de acento: delineado y con el texto en el color de acento (p. ej. "Publicar" de un post ya publicado). */
+.btn.acento-linea, .rd-post .acciones a.btn.acento-linea:not(.principal) { background: transparent; border-color: var(--acento); color: var(--acento); }
+.btn.acento-linea:hover:not(:disabled) { background: var(--sup2); }
+.btn.chico { min-height: 30px; padding: 0 10px; font-size: 13px; }
+.btn.fantasma { background: transparent; border-color: transparent; color: var(--suave); font-weight: 500; }
+.btn.fantasma:hover { color: var(--texto); }
+/* Trabajo en curso, visible desde cualquier pestaña */
+.job { display: inline-flex; flex-wrap: wrap; gap: 6px; max-width: 100%; }
+.job[hidden] { display: none; }
+.job-item { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 4px 0 12px; border-radius: 8px; background: var(--aviso-bg); color: var(--aviso); font-size: 13.5px; font-weight: 550; max-width: 100%; }
+.job-tipo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40ch; }
+.job-punto { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; animation: latido 1.2s ease-in-out infinite; }
+@keyframes latido { 50% { opacity: .3; } }
+/* Bloque Hoy: lo que pide acción, de todas las redes */
+.hoy { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: -4px 0 12px; }
+.hoy > b { font-size: 13px; color: var(--suave); font-weight: 600; margin-right: 2px; }
+.hoy button { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--borde); background: var(--sup); cursor: pointer; font: inherit; font-size: 13.5px; font-weight: 550; color: var(--texto); }
+.hoy button:hover { background: var(--sup2); }
+.hoy button .r { color: var(--suave); font-weight: 500; }
+.hoy button .c { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--aviso-bg); color: var(--aviso); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.hoy button.error .c { background: var(--error-bg); color: var(--error); }
+.hoy .al-dia { font-size: 13.5px; color: var(--ok); font-weight: 550; }
+/* Índice de la pestaña: queda fijo arriba al bajar */
+.indice { position: sticky; top: 0; z-index: 4; display: flex; gap: 4px; overflow-x: auto; padding: 8px 0; margin-bottom: 4px; background: var(--fondo); border-bottom: 1px solid var(--borde); scrollbar-width: none; }
+.indice::-webkit-scrollbar { display: none; }
+.indice:empty { display: none; }
+.indice a { flex: none; padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 550; color: var(--suave); text-decoration: none; }
+.indice a:hover { background: var(--sup2); color: var(--texto); }
+.indice a.activo { background: var(--sup2); color: var(--texto); }
+[data-indice], #sec-seg { scroll-margin-top: 64px; }
+/* Textos de ayuda plegables */
+.plegable:not(.abierto) { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.ver-mas { border: 0; background: none; padding: 0; margin: -8px 0 12px; font: inherit; font-size: 12.5px; font-weight: 550; color: var(--acento); cursor: pointer; display: block; }
+.ver-mas[hidden] { display: none; }
+.nota + .ver-mas { margin: 2px 0 10px; }
+.interruptor { display: inline-flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--borde); background: var(--sup); cursor: pointer; font-size: 14px; }
+.interruptor i { width: 32px; height: 18px; border-radius: 9px; background: var(--borde); position: relative; transition: background .15s; }
+.interruptor i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--sup); transition: transform .15s; }
+.interruptor[aria-checked="true"] i { background: var(--ok); }
+.interruptor[aria-checked="true"] i::after { transform: translateX(14px); }
+.kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+.dato.ancho { grid-column: span 2; }
+.dato p { margin: 2px 0 0; font-size: 14px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.fila-acciones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+.fila-acciones a { margin-left: auto; color: var(--suave); font-size: 14px; }
+.alertas { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.alerta { padding: 10px 14px; border-radius: 10px; font-size: 14px; font-weight: 500; }
+.alerta.aviso { background: var(--aviso-bg); color: var(--aviso); }
+.alerta.px-pend { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.alerta.px-pend small { display: block; font-weight: 400; opacity: .85; }
+.alerta.error { background: var(--error-bg); color: var(--error); }
+.alerta.cerrable { display: flex; align-items: flex-start; gap: 10px; padding-right: 6px; }
+.alerta.cerrable > span { flex: 1; min-width: 0; }
+.cerrar-alerta { flex: none; width: 28px; height: 28px; margin: -4px 0; border: 0; border-radius: 8px; background: transparent; color: inherit; font-size: 20px; line-height: 1; cursor: pointer; opacity: .7; }
+.cerrar-alerta:hover { opacity: 1; background: color-mix(in srgb, currentColor 14%, transparent); }
+.cerrar-alerta:focus-visible { opacity: 1; outline: 2px solid currentColor; outline-offset: 1px; }
+.estado-tarea { font-size: 12px; color: var(--suave); }
+.redes { max-width: 100%; overflow-x: auto; scrollbar-width: none; display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--sup2); border: 1px solid var(--borde); }
+.redes button { min-height: 32px; padding: 0 14px; border: 0; border-radius: 7px; background: transparent; cursor: pointer; font-weight: 550; font-size: 14px; color: var(--suave); display: inline-flex; align-items: center; gap: 6px; }
+.redes button[aria-selected="true"] { background: var(--sup); color: var(--texto); box-shadow: 0 1px 2px rgb(29 23 32 / .12); }
+.redes .insignia.suave { background: var(--aviso-bg); color: var(--aviso); }
+.redes .insignia { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--error); color: var(--sup); font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.nota-red { font-size: 13px; color: var(--suave); margin: 0 0 12px; }
+.rend { margin-top: 32px; }
+.rend-cab { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.rend-cab h2 { font-size: 17px; margin: 0; letter-spacing: -0.01em; }
+.rend-cab small { color: var(--suave); font-size: 13px; }
+.rend-cab .btn { margin-left: auto; }
+.rend-grilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px; margin-top: 12px; }
+.bloque { background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; padding: 14px 16px; }
+.bloque h3 { font-size: 14px; margin: 0 0 10px; font-weight: 600; }
+.comp { display: grid; grid-template-columns: 92px 1fr; gap: 4px 10px; align-items: center; font-size: 13px; margin-bottom: 10px; }
+.comp .lbl { font-weight: 550; }
+.comp .barra-m { height: 8px; border-radius: 4px; background: var(--sup2); overflow: hidden; }
+.comp .barra-m i { display: block; height: 100%; background: var(--suave); border-radius: 4px; }
+.comp .barra-m i.top { background: var(--acento); }
+.comp .det { grid-column: 2; color: var(--suave); font-size: 12px; }
+.mejor { display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: center; margin-bottom: 10px; font-size: 13px; }
+.mejor img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; background: var(--sup2); }
+.mejor p { margin: 0; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.mejor small { color: var(--suave); }
+.nota { font-size: 12px; color: var(--suave); margin: 10px 0 0; }
+.metricas { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; padding: 8px 10px; background: var(--sup2); border-radius: 8px; }
+.metricas b { font-weight: 650; }
+.kpis.cuatro { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 900px) { .rend-grilla { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .kpis.cuatro { grid-template-columns: 1fr 1fr; } .dato small { overflow-wrap: anywhere; } }
+.dato { background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+.dato b { display: block; font-size: 28px; letter-spacing: -0.02em; line-height: 1.1; font-weight: 600; }
+.dato small { color: var(--suave); font-size: 13px; }
+.trabajo { margin-top: 12px; background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; padding: 12px 16px; }
+.trabajo summary { cursor: pointer; font-weight: 550; font-size: 14px; }
+.trabajo pre { margin: 10px 0 0; max-height: 260px; overflow: auto; font-size: 12px; white-space: pre-wrap; color: var(--suave); }
+.lote { margin-top: 32px; }
+.barra { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 16px; background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; box-shadow: var(--sombra); position: sticky; top: 52px; z-index: 2; }
+.barra h2 { font-size: 17px; margin: 0; letter-spacing: -0.01em; }
+.barra select { min-height: 32px; border-radius: 8px; border: 1px solid var(--borde); background: var(--sup); padding: 0 8px; }
+.barra .der { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.etq { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12.5px; font-weight: 550; background: var(--sup2); color: var(--suave); white-space: nowrap; }
+.etq.ok { background: var(--ok-bg); color: var(--ok); }
+.etq.aviso { background: var(--aviso-bg); color: var(--aviso); }
+.etq.error { background: var(--error-bg); color: var(--error); }
+.etq.est::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+/* Grillas de tarjetas: 3 por fila en Full HD, 2 en monitor vertical o tablet, 1 en celular. */
+.grilla, .inter-grilla { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.grilla { margin-top: 16px; }
+@media (max-width: 1199px) { .grilla, .inter-grilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 699px) { .grilla, .inter-grilla { grid-template-columns: 1fr; } }
+.pieza { background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.pieza.bloqueada { opacity: .72; }
+.pieza .foto { position: relative; background: var(--sup2); display: flex; justify-content: center; }
+.pieza .foto img { max-width: 100%; width: auto; height: auto; max-height: 520px; object-fit: contain; display: block; cursor: zoom-in; }
+.pieza .foto .n { position: absolute; top: 8px; left: 8px; background: rgb(0 0 0 / .62); color: #fff; border-radius: 6px; padding: 1px 7px; font-size: 12px; }
+.pieza .cuerpo { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.meta .cuando { font-size: 13px; color: var(--suave); margin-right: auto; }
+.meta .pj { font: inherit; font-size: 12px; width: 8.5em; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; background: transparent; color: inherit; opacity: .8; }
+.meta .pj[readonly] { border-color: transparent; }
+textarea { width: 100%; border: 1px solid var(--borde); border-radius: 8px; background: var(--fondo); padding: 9px 10px; resize: vertical; line-height: 1.45; }
+textarea.texto { min-height: 92px; font-size: 15px; field-sizing: content; }
+.contador { font-size: 12px; color: var(--suave); text-align: right; margin-top: -6px; }
+.contador.mal { color: var(--error); font-weight: 600; }
+details.alt summary { cursor: pointer; font-size: 13px; color: var(--suave); }
+details.alt textarea { margin-top: 6px; font-size: 13px; min-height: 64px; }
+.idea { font-size: 13px; color: var(--suave); margin: 0; }
+.lista { margin: 0; padding-left: 18px; font-size: 13px; }
+.lista.error { color: var(--error); }
+.lista.aviso { color: var(--aviso); }
+.pie { display: flex; justify-content: space-between; align-items: center; margin-top: auto; gap: 8px; }
+.pie small { color: var(--suave); font-size: 12px; }
+.tira { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--sup2); }
+.tira img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; display: block; cursor: zoom-in; }
+.tira .vacia { aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; color: var(--error); font-size: 12px; }
+input.titulo { width: 100%; border: 1px solid var(--borde); border-radius: 8px; background: var(--fondo); padding: 8px 10px; font: inherit; font-weight: 600; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tags span { font-size: 11.5px; padding: 1px 7px; border-radius: 6px; background: var(--sup2); color: var(--suave); }
+button.etq { border: 0; cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 550; }
+button.etq:hover { filter: brightness(0.96); }
+.etq.pat { background: color-mix(in srgb, var(--acento) 14%, transparent); color: var(--acento); }
+.stock { display: grid; grid-template-columns: 80px 1fr 64px; gap: 6px 10px; align-items: center; font-size: 13px; }
+.stock .barra-m { height: 8px; border-radius: 4px; background: var(--sup2); overflow: hidden; }
+.stock .barra-m i { display: block; height: 100%; background: var(--suave); border-radius: 4px; }
+.stock .barra-m i.pat { background: var(--acento); }
+.stock small { color: var(--suave); text-align: right; }
+.btn[hidden], .fila-acciones a[hidden] { display: none; }
+.pubs { margin-top: 32px; }
+.rd-bloque { margin-top: 28px; }
+.r34-subs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); gap: 14px; }
+.r34-sub { background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; overflow: hidden; display: grid; grid-template-columns: 180px 1fr; }
+.r34-sub.saltado, .r34-sub.subido { opacity: .75; }
+.r34-sub img { width: 100%; height: 100%; max-height: 320px; object-fit: cover; background: var(--sup2); }
+.r34-sub-cuerpo { padding: 12px 14px; display: grid; gap: 8px; align-content: start; min-width: 0; font-size: 13.5px; }
+.r34-sub-cuerpo p { margin: 0; }
+.r34-campo { display: grid; grid-template-columns: 70px 1fr auto; gap: 8px; align-items: start; }
+.r34-campo > span { color: var(--suave); font-size: 12px; padding-top: 3px; }
+.r34-campo code { font-size: 12px; background: var(--sup2); padding: 3px 6px; border-radius: 6px; overflow-wrap: anywhere; min-width: 0; }
+.r34-campo code.largo { max-height: 84px; overflow: auto; }
+.r34-sub .acciones { display: flex; gap: 6px; flex-wrap: wrap; }
+@media (max-width: 560px) { .r34-sub { grid-template-columns: 1fr; } .r34-sub img { max-height: 260px; } }
+.r34-resumen { font-size: 16px; line-height: 1.5; margin: 4px 0 8px; }
+.r34-ver { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.r34-v { background: var(--sup); border: 1px solid var(--borde); border-left-width: 4px; border-radius: 12px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; }
+.r34-v.ok { border-left-color: var(--ok, #3fa66b); } .r34-v.error { border-left-color: var(--error); } .r34-v.aviso { border-left-color: var(--aviso, #d9a03f); }
+.r34-v p { margin: 0; font-size: 13.5px; color: var(--suave); }
+.tabla-r34 { overflow-x: auto; margin-bottom: 6px; }
+.grilla-r34 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; font-size: 13.5px; }
+.grilla-r34 ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+#sec-reddit.pausado:not(.ver) :is(#rd-buscar-form, #rd-agregar-form, #rd-subs, .rd-oculto-pausa) { display: none; }
+.rd-grupo { font-size: 14px; margin: 16px 0 8px; color: var(--suave); font-weight: 600; }
+.rd-form { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.rd-form[hidden] { display: none; }
+.rd-form.col textarea { flex: none; min-height: 96px; }
+.rd-form.col { flex-direction: column; align-items: flex-start; }
+.rd-form input, .rd-form textarea { flex: 1 1 260px; min-width: 0; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--borde); background: var(--sup); color: var(--texto); font: inherit; }
+.rd-sub { background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; }
+.rd-sub.descartado, .rd-sub.no_sirve { opacity: .6; }
+.rd-sub h3 { margin: 0; font-size: 15px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.rd-sub p { margin: 0; font-size: 13.5px; }
+.rd-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rd-chips span { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--sup2); }
+.rd-chips span.si { color: var(--ok, #3fb37f); } .rd-chips span.no { color: var(--error, #e5484d); }
+.rd-sub textarea { width: 100%; min-height: 90px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--borde); background: var(--fondo); color: var(--texto); font: inherit; font-size: 13px; }
+/* Tarjetas con imagen: imagen arriba a todo el ancho, texto abajo y botones al pie. */
+.rd-post { background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.rd-post > div { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.rd-post img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: top; border-radius: 8px; background: var(--sup2); cursor: zoom-in; }
+.rd-post .acciones { margin-top: auto; padding-top: 4px; }
+.rd-post .tit { font-weight: 600; font-size: 14.5px; margin: 0; }
+.rd-post .dato-c, .rd-sub .dato-c, .rd-com .dato-c { font-size: 12.5px; color: var(--suave); margin: 0; }
+.rd-post .acciones, .rd-sub .acciones { display: flex; flex-wrap: wrap; gap: 6px; }
+.rd-post .acciones a.btn:not(.principal), .rd-sub .acciones a.btn:not(.principal) { color: var(--texto); }
+.rd-com { background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: grid; gap: 6px; }
+.rd-com .op { display: flex; gap: 8px; align-items: center; justify-content: space-between; border-top: 1px solid var(--borde); padding-top: 6px; font-size: 14px; }
+
+.inter { margin-top: 32px; }
+
+.obra { background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; padding: 12px; display: flex; gap: 14px; align-items: flex-start; }
+.obra.hecho, .obra.saltado { opacity: .55; }
+.obra > img { width: 150px; flex: none; aspect-ratio: 4 / 5; object-fit: cover; object-position: top; border-radius: 8px; background: var(--sup2); cursor: zoom-in; }
+.obra-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; align-self: stretch; }
+.obra .autor a { color: inherit; }
+.obra .acciones .par { display: inline-flex; gap: 6px; margin-left: auto; }
+.inter-grilla.h { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 899px) { .inter-grilla.h { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .obra > img { width: 104px; } .obra .acciones .par { margin-left: 0; } }
+.obra > div { min-width: 0; }
+.obra h3 { margin: 0 0 2px; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.obra .autor { font-size: 12.5px; color: var(--suave); margin-bottom: 6px; }
+.obra .com { grid-column: 1 / -1; margin: 0; font-size: 14px; line-height: 1.5; }
+.obra .trad, .obra .porque { grid-column: 1 / -1; margin: 0; font-size: 12.5px; color: var(--suave); }
+.obra .acciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 2px; }
+.obra .acciones a.btn:not(.principal) { color: var(--texto); }
+.concursos { margin-top: 14px; background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; }
+.concursos summary { padding: 10px 14px; cursor: pointer; font-size: 13.5px; }
+.concursos ul { margin: 0; padding: 0 14px 12px 32px; font-size: 13.5px; line-height: 1.7; }
+.conc { background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; padding: 14px; display: grid; gap: 6px; align-content: start; }
+.conc h3 { margin: 0; font-size: 15px; }
+.conc p { margin: 0; font-size: 13.5px; }
+.conc .dato-c { font-size: 12.5px; color: var(--suave); }
+.conc .acciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.conc .acciones a.btn:not(.principal) { color: var(--texto); }
+.so-form { display: grid; gap: 10px; background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+.so-form .fila { display: flex; flex-wrap: wrap; gap: 10px; }
+.so-form label.campo { display: grid; gap: 4px; font-size: 12.5px; color: var(--suave); flex: 1 1 200px; }
+.so-form input[type=text], .so-form input[type=url], .so-form input[type=number], .so-form input[type=datetime-local] { padding: 9px 11px; border-radius: 10px; border: 1px solid var(--borde); background: var(--sup); color: var(--texto); font: inherit; min-width: 0; }
+.so-form fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.so-form legend { font-size: 12.5px; color: var(--suave); margin-bottom: 4px; padding: 0; }
+.so-form .chk { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; min-height: 32px; }
+.so-form .chk input { width: 18px; height: 18px; accent-color: var(--acento); }
+.so-gan { margin: 0; padding-left: 20px; font-size: 14px; }
+.so-gan a { color: var(--texto); }
+.so-tabla { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.so-tabla td, .so-tabla th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--borde); }
+.so-tabla-cont { max-height: 260px; overflow: auto; }
+.conc-no { padding: 0 14px 12px; display: grid; gap: 8px; font-size: 13px; }
+.conc-no div { border-top: 1px solid var(--borde); padding-top: 8px; }
+
+.lote-pub { margin-top: 16px; overflow: hidden; }
+.mejores-fila { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 4px 20px; }
+.lote-pub .pub { grid-template-columns: 52px 170px 1fr auto; }
+.lote-pub .metricas { padding: 4px 8px; font-size: 12px; margin-top: 4px; }
+@media (max-width: 700px) { .lote-pub .pub { grid-template-columns: 52px 1fr; } .lote-pub .pub > div, .lote-pub .pub > span:last-child { grid-column: 1 / -1; } .lote-pub .pub .cuando { grid-column: 2; order: 0; } }
+.pub-lista { background: var(--sup); border: 1px solid var(--borde); border-radius: 12px; overflow: hidden; }
+.pub { display: grid; grid-template-columns: 52px 150px 90px 1fr auto; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--borde); font-size: 13.5px; }
+.pub:first-child { border-top: 0; }
+.pub img { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; background: var(--sup2); cursor: zoom-in; }
+.pub .cuando { color: var(--suave); font-size: 12.5px; }
+.pub .pj { font-weight: 600; }
+.pub p { margin: 0; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.pub .met { color: var(--suave); font-size: 12px; }
+.pub-lista details summary { padding: 10px 14px; cursor: pointer; font-size: 13px; color: var(--suave); border-top: 1px solid var(--borde); }
+@media (max-width: 700px) { .pub { grid-template-columns: 52px 1fr auto; } .pub .cuando, .pub .pj { grid-column: 2; } .pub p { grid-column: 1 / -1; } .pub .cuando { order: 1; } }
+.vacio { margin-top: 16px; padding: 18px 20px; text-align: center; background: var(--sup); border: 1px dashed var(--borde); border-radius: 12px; color: var(--suave); }
+.vacio b { color: var(--texto); display: block; font-size: 15px; margin-bottom: 4px; }
+.linea-vacia { font-size: 13.5px; color: var(--suave); margin: 0; padding: 10px 14px; background: var(--sup); border: 1px dashed var(--borde); border-radius: 10px; }
+.linea-vacia b { color: var(--texto); font-weight: 600; }
+.aviso-global { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--texto); color: var(--fondo); padding: 10px 16px; border-radius: 10px; font-size: 14px; max-width: min(90vw, 640px); box-shadow: var(--sombra); z-index: 9; }
+dialog { border: 0; padding: 0; background: transparent; max-width: 96vw; max-height: 96vh; }
+dialog::backdrop { background: rgb(0 0 0 / .8); }
+.cab-btns { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+dialog#hist { background: var(--fondo); color: var(--texto); border: 1px solid var(--borde); border-radius: 14px; width: min(760px, calc(100vw - 32px)); max-height: 88vh; padding: 0; overflow: auto; }
+.hist-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px 8px; position: sticky; top: 0; background: var(--fondo); z-index: 1; }
+.hist-cab h2 { margin: 0; font-size: 18px; }
+.hist-filtros { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 16px 10px; position: sticky; top: 52px; background: var(--fondo); z-index: 1; border-bottom: 1px solid var(--borde); }
+#hist-lista { padding: 4px 16px 16px; }
+#hist-lista .vacio { margin-top: 12px; }
+ul.hist { list-style: none; margin: 0; padding: 0; }
+ul.hist li { display: grid; grid-template-columns: 48px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--borde); }
+ul.hist img, .hist-sin { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; object-position: top; cursor: zoom-in; background: var(--sup2); display: grid; place-items: center; color: var(--suave); }
+.hist-txt { min-width: 0; font-size: 13.5px; display: grid; gap: 2px; }
+.hist-txt b { font-weight: 600; }
+.hist-txt .dato-c { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist-com { font-size: 12.5px; color: var(--suave); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hist-acc { display: flex; gap: 6px; }
+@media (max-width: 560px) { ul.hist li { grid-template-columns: 48px 1fr; } .hist-acc { grid-column: 2; } }
+dialog img { max-width: 96vw; max-height: 92vh; display: block; border-radius: 8px; }
+@media (max-width: 1100px) { .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } .dato.ancho { grid-column: span 4; } }
+@media (max-width: 900px) { .fila-acciones .btn { flex: 1 1 160px; } .fila-acciones a { margin-left: 0; } }
+@media (max-width: 560px) { .envoltura { padding: 0 16px 48px; } .kpis { grid-template-columns: 1fr 1fr; } .dato.ancho { grid-column: span 2; } .dato b { font-size: 24px; } .barra { position: static; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* Secciones como bloques separados. Cada sección es una tarjeta grande
+   con su título y una línea abajo; adentro, las tarjetas chicas usan un tono un poco distinto para que se lean como
+   contenido de esa sección. --sup y --sup2 se redefinen adentro (el fondo de la sección usa --sec-bg). */
+:root { --sec-bg: #FFFFFF; --sec-in: #FBF8FA; --sec-in2: #F1E8EF; }
+@media (prefers-color-scheme: dark) { :root { --sec-bg: #1F1926; --sec-in: #2A2232; --sec-in2: #362C40; } }
+#sec-seg, .inter, .pubs, .rend, #lotes > .lote, .rd-bloque, .trabajo {
+  --sup: var(--sec-in); --sup2: var(--sec-in2);
+  background: var(--sec-bg); border: 1px solid var(--borde); border-radius: 16px; padding: 20px 22px 22px; margin-top: 28px; box-shadow: var(--sombra);
+}
+#sec-seg { margin-top: 12px; }
+.inter > .rend-cab, .pubs > .rend-cab, .rend > .rend-cab, .rd-bloque > .rend-cab { padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--borde); }
+.inter > .rend-cab h2, .pubs > .rend-cab h2, .rend > .rend-cab h2, .rd-bloque h2, .barra h2 { font-size: 19px; }
+#lotes > .lote > .barra { top: 52px; }
+.trabajo { padding: 14px 22px; }
+.btn.peligro { color: var(--error); border-color: var(--error); background: var(--error-bg); }
+/* Qué hacer con cada sugerencia de interacción (2026-11-23): siempre explícito, nunca deducido de si hay botón Copiar. */
+.que-hacer { margin: 6px 0 2px; font-size: 13px; font-weight: 600; }
+.que-hacer.si { color: var(--ok); }
+.que-hacer.no { color: var(--aviso); }
+@media (max-width: 560px) { #sec-seg, .inter, .pubs, .rend, #lotes > .lote, .rd-bloque, .trabajo { padding: 14px 14px 16px; border-radius: 14px; margin-top: 20px; } }
+</style>
+</head>
+<body>
+<div class="envoltura">
+  <header>
+    <h1>{{MARCA}}</h1>
+    <div class="redes" role="tablist" aria-label="Red que se muestra" id="redes"></div>
+    <div class="der">
+      <div class="job" id="job" role="status" hidden></div>
+      <button class="interruptor" id="auto" role="switch" aria-checked="false"><i aria-hidden="true"></i><span>Automatización</span></button>
+      <a class="btn" style="color:inherit" href="/configuracion">Configuración</a><button class="btn fantasma" id="cerrar">Cerrar panel</button>
+    </div>
+  </header>
+  <div class="hoy" id="hoy" aria-label="Tareas de hoy"></div>
+  <nav class="indice" id="indice" aria-label="Secciones de esta pestaña"></nav>
+  <section id="sec-reddit" aria-label="Reddit" hidden>
+    <p class="nota-red" data-plegable="rd-nota">Asistente para <a href="https://www.reddit.com/" target="_blank" rel="noopener">tu cuenta de Reddit</a>: yo busco subreddits, preparo posts y propongo comentarios; <b>vos publicás y comentás a mano</b>. Al principio, unas semanas de comentarios genuinos sin links: muchos subreddits piden karma y antigüedad.</p>
+    <div class="rd-bloque" id="rd-b-subs" data-indice="Subreddits">
+      <div class="rend-cab"><h2>Subreddits</h2><small id="rd-subs-n"></small></div>
+      <div id="rd-plan"></div>
+      <form class="rd-form" id="rd-buscar-form"><input id="rd-tema" type="text" placeholder="Qué buscar, p. ej. AI anime girls, Ahri fan art" aria-label="Tema para buscar subreddits"><button class="btn principal" type="submit">Buscar subreddits</button></form>
+      <form class="rd-form" id="rd-agregar-form"><input id="rd-nuevo" type="text" placeholder="¿Ya conocés uno? r/nombre" aria-label="Agregar un subreddit"><button class="btn" type="submit">Agregar</button></form>
+      <div id="rd-subs"></div>
+    </div>
+    <div class="rd-bloque rd-oculto-pausa" id="rd-b-posts" data-indice="Posts">
+      <div class="rend-cab"><h2>Posts preparados</h2><small id="rd-posts-n"></small></div>
+      <div id="rd-posts"></div>
+    </div>
+    <div class="rd-bloque rd-oculto-pausa" id="rd-b-com" data-indice="Comentarios">
+      <div class="rend-cab"><h2>Comentario sugerido</h2></div>
+      <form class="rd-form col" id="rd-com-form"><textarea id="rd-post" rows="3" placeholder="Pegá el subreddit, el título del post y, si querés, qué muestra" aria-label="Post de Reddit para comentar"></textarea><button class="btn principal" type="submit">Sugerir comentarios</button></form>
+      <div id="rd-coms"></div>
+    </div>
+  </section>
+  <section id="sec-r34" aria-label="Rule34" hidden>
+    <p class="nota-red" data-plegable="r34-nota"><b>Investigación y asistente de subida</b>: leo Rule34 por su API oficial para ver qué funciona y te preparo cada post; <b>vos subís a mano</b>. No comento, no voto ni doy favoritos. Reglas resumidas en <span class="mono">docs/rule34.md</span>: en contenido con IA, <b>nada de marca de agua, firma ni link en la imagen</b>; el source va a la página exacta donde está publicada la imagen.</p>
+    <div class="rd-bloque" id="r34-b-subidas" data-indice="Subidas">
+      <div class="rend-cab"><h2>Subidas</h2><small id="r34-sub-n"></small></div>
+      <p class="dato-c" data-plegable="r34-sub" style="margin-top:0">Yo preparo cada post y <b>vos lo subís a mano</b> en el <a href="https://rule34.xxx/index.php?page=post&amp;s=add" target="_blank" rel="noopener">formulario de Rule34</a>: elegís el archivo, pegás source, título y etiquetas, marcás el rating y tocás Upload. Como máximo 2 por día y el mismo personaje cada 2 días (borran lo repetitivo). Puede tardar hasta 30 días en aparecer: lo aprueba un moderador.</p>
+      <form class="rd-form" id="r34-prep-form"><input id="r34-carpeta" type="text" placeholder="Carpeta con las imágenes limpias (sin marca de agua)" aria-label="Carpeta con las imágenes"><input id="r34-source" type="url" placeholder="Source: link limpio del post donde están (Patreon, Pixiv o X)" aria-label="Source"><button class="btn principal" type="submit">Preparar subidas</button></form>
+      <div id="r34-subidas"></div>
+    </div>
+    <div class="rd-bloque" id="r34-b-conexion">
+      <div class="rend-cab"><h2>Conexión</h2><small id="r34-estado"></small><button class="btn chico" id="r34-cambiar" type="button" hidden>Cambiar key</button></div>
+      <form class="rd-form" id="r34-clave-form"><input id="r34-uid" inputmode="numeric" placeholder="user_id" aria-label="user_id de Rule34" style="flex:0 1 140px"><input id="r34-key" type="password" autocomplete="off" placeholder="API key (My Account, Options)" aria-label="API key de Rule34"><button class="btn" type="submit">Guardar key</button></form>
+    </div>
+    <div class="rd-bloque" id="r34-b-analisis" data-indice="Análisis">
+      <div class="rend-cab"><h2>Análisis</h2><small id="r34-n"></small></div>
+      <form class="rd-form" id="r34-form"><input id="r34-nicho" type="text" value="league_of_legends" placeholder="Nicho principal (etiquetas), p. ej. league_of_legends" aria-label="Nicho principal"><button class="btn principal" type="submit">Hacer el análisis</button></form>
+      <p class="dato-c" style="margin-top:0">Siempre a mano: cada vez que lo actualizás, reemplaza al anterior y muestra qué cambió.</p>
+      <div id="r34-res"></div>
+    </div>
+  </section>
+  <section aria-label="Seguimiento" id="sec-seg">
+    <p class="nota-red" id="nota-red" data-plegable="nota-red" hidden></p>
+    <div class="kpis">
+      <div class="dato"><b class="mono" id="k-publicados">0</b><small id="k-publicados-txt">publicados en X</small></div>
+      <div class="dato"><b class="mono" id="k-salir">0</b><small id="k-salir-txt">aprobados por salir</small></div>
+      <div class="dato"><b class="mono" id="k-cubierto">sin posts</b><small>cubierto hasta</small></div>
+      <div class="dato"><b class="mono" id="k-imagenes">0</b><small id="k-imagenes-txt">posts de backlog listos</small></div>
+      <div class="dato ancho"><small id="k-proximo-cuando">próximo post</small><p id="k-proximo">Nada programado todavía.</p></div>
+    </div>
+    <div class="alertas" id="alertas"></div>
+    <div class="fila-acciones">
+      <button class="btn" id="abrir">Abrir carpeta de imágenes</button>
+      <button class="btn" id="generar">Generar lote</button>
+      <button class="btn" id="programar">Programar</button>
+      <a id="ultimo" href="#" target="_blank" rel="noopener" hidden>Ver el último post</a>
+    </div>
+  </section>
+  <section class="inter" id="sec-inter" data-indice="Interacción" aria-labelledby="tit-inter" hidden>
+    <div class="rend-cab"><h2 id="tit-inter">Interacción del día</h2><small id="inter-n"></small><span class="cab-btns"><button class="btn chico" data-todo-hecho="pixiv" hidden title="Marca como hechas todas las de esta sección, igual que tocar Hecho en cada una">Todo hecho</button><button class="btn chico" data-hist="pixiv">Historial</button><button class="btn chico" id="px-sugerencias">Buscar sugerencias</button></span></div>
+    <p class="nota" data-plegable="px-inter">Obras del último mes de League of Legends (primero las hechas con IA y los personajes de Patreon) y fanart de Overwatch, Valorant, Arcane y World of Warcraft (hasta 2 de cada uno), con un comentario sugerido. Nunca se repite una obra; cuando revisaste todas, busca nuevas sola al abrir el panel. Vos decidís: abrís la obra, comentás o seguís al artista si te gusta, y marcás Hecho o Saltar. El asistente no interactúa solo.</p>
+    <div id="inter"></div>
+  </section>
+  <section class="inter" id="sec-bs" data-indice="Crecer" aria-labelledby="tit-bs" hidden>
+    <div class="rend-cab"><h2 id="tit-bs">Crecer en Bluesky</h2><small id="bs-n"></small><span class="cab-btns"><button class="btn chico" data-todo-hecho="bsky" hidden title="Marca como hechas todas las de esta sección, igual que tocar Hecho en cada una">Todo hecho</button><button class="btn chico" data-hist="bsky">Historial</button><button class="btn chico" id="bs-sugerencias">Buscar sugerencias</button></span></div>
+    <p class="nota" data-plegable="bs-inter">Posts recientes del nicho para responder (con la respuesta sugerida) y cuentas para seguir. Vos respondés y seguís desde Bluesky y marcás Hecho o Saltar. Cuando revisaste todo, busca nuevas sola al abrir el panel (como mucho cada 2 horas).</p>
+    <div id="bs-inter"></div>
+  </section>
+  <section class="inter" id="sec-xr" data-indice="Responder" aria-labelledby="tit-xr" hidden>
+    <div class="rend-cab"><h2 id="tit-xr">Crecer en X: responder con Grok o tu IA</h2><small id="xr-n"></small><span class="cab-btns"><button class="btn chico" data-todo-hecho="x" hidden title="Marca como hechas todas las de esta sección, igual que tocar Hecho en cada una">Todo hecho</button><button class="btn chico" data-hist="x">Historial</button></span></div>
+    <details class="concursos" id="xr-ayuda"><summary>Cómo buscar posts con Grok o con tu IA (5 minutos por día)</summary><div style="padding:0 14px 12px;font-size:13.5px;line-height:1.6">
+      <ol style="margin:4px 0 8px;padding-left:20px">
+        <li>Abrí <a href="https://x.com/i/grok" target="_blank" rel="noopener">Grok en X</a> (o el ícono de Grok en la app), con la sesión de <b>{{X}}</b>.</li>
+        <li>Tocá <b>Copiar pedido para Grok</b>, pegalo y enviá. Grok busca en X en tiempo real y devuelve una línea por post. El pedido ya incluye los posts y cuentas que te pasó antes, para que no los repita.</li>
+        <li><b>O con una IA de navegador:</b> abrí <a href="https://x.com/home" target="_blank" rel="noopener">x.com</a> en tu Chrome con la sesión de <b>{{X}}</b>, abrí tu IA de navegador (ChatGPT con navegador, Claude in Chrome), tocá <b>Copiar pedido para IA de navegador</b>, pegalo y enviá. La IA recorre búsquedas de X de las últimas 24 horas, solo leyendo. Tarda más que Grok (unos minutos). El mismo pedido sirve para ChatGPT en modo agente o en Atlas.</li>
+        <li>Copiá <b>toda</b> la respuesta y pegala acá abajo. Tocá <b>Sugerir respuestas</b>.</li>
+        <li>Abrí cada post con <b>Abrir en X</b>, pegá la respuesta (o cambiala) y publicala vos. Marcá Hecho.</li>
+      </ol>
+      <p class="dato-c" style="margin:0 0 8px">Usá siempre <b>el mismo chat de Grok</b> todos los días: así ve lo que ya te pasó. Si trae algo repetido, el panel lo descarta solo. Si no respeta el formato o no pasa las imágenes, pedile "use the exact format, one line per post, with the pbs.twimg.com image link". Respondé posts recientes: es cuando más se ve.</p>
+      <p class="dato-c" style="margin:0 0 8px">El panel comprueba cada link en X antes de escribir: descarta los posts que no existen (una IA puede inventarlos) o que tienen más de 3 días, y toma la imagen y el texto reales del post.</p>
+    </div></details>
+    <div class="cab-btns" style="margin-top:10px"><button class="btn chico" id="xr-pedido">Copiar pedido para Grok</button><button class="btn chico" id="xr-pedido-nav">Copiar pedido para IA de navegador</button></div>
+    <form class="rd-form col" id="xr-form" style="margin-top:12px"><textarea id="xr-texto" rows="4" placeholder="Pegá acá la respuesta completa de Grok o de tu IA (o el texto de uno o varios posts de X)" aria-label="Lo que dio Grok o tu IA"></textarea><button class="btn principal" type="submit">Sugerir respuestas</button></form>
+    <div id="xr"></div>
+  </section>
+  <section class="inter" id="sec-xt" data-indice="Traducir" aria-labelledby="tit-xt" hidden>
+    <div class="rend-cab"><h2 id="tit-xt">Pasar al inglés con nuestra voz</h2><small id="xt-n"></small><span class="cab-btns"><button class="btn chico" id="xt-limpiar" hidden title="Borra todas las traducciones guardadas">Limpiar historial</button></span></div>
+    <p class="dato-c" style="margin:0 0 8px">Escribí o pegá un texto en español o en cualquier idioma. Te lo devuelvo en inglés con el tono de nuestros posts o de nuestras respuestas, más dos alternativas. No se publica nada: lo copiás y lo usás vos.</p>
+    <form class="rd-form col" id="xt-form"><textarea id="xt-texto" rows="3" maxlength="3000" placeholder="Ej.: me encanta cómo quedó la mirada, no pensaba subirla pero acá está" aria-label="Texto a pasar al inglés"></textarea>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px"><label style="display:inline-flex;flex-direction:row;align-items:center;gap:6px;margin:0;font-size:14px;white-space:nowrap;width:auto;flex:none"><input type="radio" name="xt-tipo" value="post" checked style="margin:0;width:auto;flex:none"> Post nuestro</label><label style="display:inline-flex;flex-direction:row;align-items:center;gap:6px;margin:0;font-size:14px;white-space:nowrap;width:auto;flex:none"><input type="radio" name="xt-tipo" value="respuesta" style="margin:0;width:auto;flex:none"> Respuesta a otro</label><button class="btn principal" type="submit">Pasar al inglés</button></div></form>
+    <div id="xt"></div>
+  </section>
+  <section class="inter" id="sec-conc" data-indice="Concursos" aria-labelledby="tit-conc" hidden>
+    <div class="rend-cab"><h2 id="tit-conc">Concursos de Pixiv</h2><small id="conc-n"></small><button class="btn chico" id="px-concursos">Actualizar concursos</button></div>
+    <p class="nota" data-plegable="px-conc">Concursos oficiales abiertos. Arriba, los que aceptan obras hechas con IA y fanart (los que nos sirven), según sus bases. Para participar, un post de un lote aprobado lleva la etiqueta del concurso.</p>
+    <div id="conc"></div>
+  </section>
+  <main id="lotes" data-indice="Lote"></main>
+  <section class="pubs" id="sec-pubs" data-indice="Publicados" aria-labelledby="tit-pubs">
+    <div class="rend-cab"><h2 id="tit-pubs">Publicados</h2><small id="pubs-n"></small></div>
+    <div id="pubs"></div>
+  </section>
+  <section class="rend" id="sec-rend" data-indice="Rendimiento" aria-labelledby="tit-rend">
+    <div class="rend-cab"><h2 id="tit-rend">Rendimiento</h2><small id="rend-act"></small><button class="btn chico" id="metricas">Actualizar métricas</button></div>
+    <div id="rend"></div>
+  </section>
+  <section class="inter" id="sec-sorteo" data-indice="Sorteos" aria-labelledby="tit-sorteo" hidden>
+    <div class="rend-cab"><h2 id="tit-sorteo">Sorteos</h2><small id="so-n"></small><button class="btn chico" id="so-nuevo">Nuevo sorteo</button></div>
+    <p class="nota" id="so-nota" data-plegable="so-nota"></p>
+    <div id="so-x"></div>
+    <div id="so-form-cont"></div>
+    <div id="so-lista"></div>
+  </section>
+  <details class="trabajo" id="trabajo" data-indice="Último trabajo"><summary id="trabajo-tit">Último trabajo</summary><pre id="log" class="mono"></pre><button class="btn chico" id="detener" hidden style="margin-top:10px">Detener</button></details>
+</div>
+<dialog id="visor" aria-label="Imagen ampliada"></dialog>
+<dialog id="hist" aria-labelledby="hist-tit"><div class="hist-cab"><h2 id="hist-tit">Historial</h2><button class="btn chico" id="hist-cerrar">Cerrar</button></div><div id="hist-filtros" class="hist-filtros"></div><div id="hist-lista"></div></dialog>
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let datos = null, loteSel = null;
+let red = (() => { try { return localStorage.getItem("red") || "x"; } catch { return "x"; } })();
+const RED = () => datos.redes.find((r) => r.clave === red) ?? datos.redes[0];
+const PR = () => datos.por_red[RED().clave];
+const CTA = { ninguno: "Sin CTA", bio: "Link in bio", patreon: "Link al Patreon" };
+// Trabajos en paralelo: cada botón espera solo a los de su grupo (ver servidor.mjs).
+const ocup = (g) => (datos?.trabajos ?? []).find((t) => t.grupo === g) ?? null;
+const ESTADO_X = { CANCELADO: ["neutro", "Cancelado"], PROGRAMADO: ["neutro", "Programado"], PUBLICADO: ["ok", "Publicado"], "EN ESPERA": ["aviso", "En espera"], VENCIDO: ["error", "Vencido"], FALLIDO: ["error", "Falló"], BLOQUEADO: ["error", "Frenado"] };
+
+function aviso(msg) {
+  const d = document.createElement("div"); d.className = "aviso-global"; d.role = "status"; d.textContent = msg;
+  document.body.append(d); setTimeout(() => d.remove(), 4500);
+}
+async function api(accion, body) {
+  const r = await fetch(`/api/${accion}`, { method: "POST", headers: { "Content-Type": "application/json", "x-panel": "1" }, body: JSON.stringify(body ?? {}) });
+  const j = await r.json();
+  if (!r.ok) { aviso(j.error ?? "Algo falló"); throw new Error(j.error); }
+  return j;
+}
+const NOMBRE_M = { impressions: "impresiones", views: "vistas", reach: "alcance", likes: "likes", reactions: "reacciones", reposts: "reposts", shares: "compartidos", comments: "respuestas", quotes: "citas", clicks: "clicks", engagementRate: "eng.", follows: "seguidores", saves: "guardados" };
+const ORDEN_M = Object.keys(NOMBRE_M);
+const num = (v, pct) => v == null ? "s/d" : pct ? `${v.toLocaleString("es-AR", { maximumFractionDigits: 1 })} %` : Math.round(v).toLocaleString("es-AR", { notation: v >= 10000 ? "compact" : "standard" });
+const NOMBRE_CTA = { ninguno: "Sin CTA", bio: "Link in bio", patreon: "Patreon" };
+function comparar(grupos, nombre) {
+  if (!grupos.length) return `<p class="nota">Todavía no hay posts con 48 h o más.</p>`;
+  const max = Math.max(...grupos.map((g) => g.vistas ?? g.interacciones ?? 0), 1);
+  return grupos.map((g, i) => {
+    const v = g.vistas ?? g.interacciones ?? 0;
+    return `<div class="comp"><span class="lbl">${esc(nombre(g.clave))}</span><span class="barra-m" role="img" aria-label="${num(v)} de promedio"><i class="${i === 0 && grupos.length > 1 ? "top" : ""}" style="width:${(100 * v) / max}%"></i></span>
+      <span class="det">${g.vistas != null ? num(g.vistas) + " vistas" : num(g.interacciones) + " interacciones"} prom., ${num(g.eng, true)} eng.${g.clicks != null ? ", " + num(g.clicks) + " clicks" : ""} (${g.posts} post${g.posts === 1 ? "" : "s"})</span></div>`;
+  }).join("");
+}
+function pintarRend(r, midiendo) {
+  $("#rend-act").textContent = midiendo ? "actualizando…" : r.posts ? `${r.posts} post${r.posts === 1 ? "" : "s"} con métricas` : "";
+  if (!r.posts) { $("#rend").innerHTML = `<p class="linea-vacia"><b>Todavía no hay métricas.</b> Aparecen cuando sale el primer post. Buffer las actualiza cada pocas horas y el panel las trae solo.</p>`; return; }
+  const tot = r.totales;
+  const mejores = r.mejores.map((p) => `<div class="mejor"><img src="${p.img}" alt="" loading="lazy"><div><p>${esc(p.texto.replace("{PATREON}", "🔗"))}</p><small>${p.vistas != null ? num(p.vistas) + " vistas" : num(p.interacciones) + " interacciones"}, ${p.hora}${p.link ? `, <a href="${esc(p.link)}" target="_blank" rel="noopener">ver</a>` : ""}</small></div></div>`).join("");
+  const kpis = `<div class="kpis cuatro">
+      <div class="dato"><b class="mono">${num(tot.vistas)}</b><small>vistas en total</small></div>
+      <div class="dato"><b class="mono">${num(tot.interacciones)}</b><small>interacciones (likes, reposts, respuestas)</small></div>
+      <div class="dato"><b class="mono">${num(tot.clicks)}</b><small>clicks</small></div>
+      <div class="dato"><b class="mono">${num(tot.eng, true)}</b><small>engagement promedio</small></div>
+    </div>`;
+  // Sin posts de 48 h, las comparaciones están vacías: en su lugar, una línea (los mejores posts sí se muestran).
+  if (!r.maduros) {
+    const sin = (r.por_hashtag ?? []).map((g) => esc(g.clave) + (r.usos_hashtag?.[g.clave] ? ` (${r.usos_hashtag[g.clave]} en curso)` : ""));
+    $("#rend").innerHTML = `${kpis}
+      <div class="bloque" style="margin-top:12px"><h3>Mejores posts</h3><div class="mejores-fila">${mejores}</div></div>
+      <p class="linea-vacia" style="margin-top:12px">Las comparaciones por horario, por tipo de cierre y por hashtag aparecen cuando haya posts con 48 h o más (hoy ${r.maduros ?? 0} de ${r.posts}).${sin.length ? ` Hashtags del nicho en seguimiento: ${sin.join(", ")}.` : ""}</p>`;
+    return;
+  }
+  $("#rend").innerHTML = `
+    <div class="kpis cuatro">
+      <div class="dato"><b class="mono">${num(tot.vistas)}</b><small>vistas en total</small></div>
+      <div class="dato"><b class="mono">${num(tot.interacciones)}</b><small>interacciones (likes, reposts, respuestas)</small></div>
+      <div class="dato"><b class="mono">${num(tot.clicks)}</b><small>clicks</small></div>
+      <div class="dato"><b class="mono">${num(tot.eng, true)}</b><small>engagement promedio</small></div>
+    </div>
+    <div class="rend-grilla">
+      <div class="bloque"><h3>Por horario (Argentina)</h3>${comparar(r.por_hora, (k) => /^\d{2}:\d{2}$/.test(k) ? horaAR1(k) : k)}</div>
+      <div class="bloque"><h3>Por tipo de cierre</h3>${comparar(r.por_cta, (k) => NOMBRE_CTA[k] ?? k)}</div>
+      <div class="bloque"><h3>Por hashtag</h3>${(() => {
+        const con = (r.por_hashtag ?? []).filter((g) => g.posts), sin = (r.por_hashtag ?? []).filter((g) => !g.posts);
+        return (con.length ? comparar(con, (k) => k) : `<p class="nota" style="margin:0 0 8px">Todavía no hay posts con hashtag y 48 h o más.</p>`)
+          + (sin.length ? `<p class="nota">Del nicho, todavía sin datos: ${sin.map((g) => esc(g.clave) + (r.usos_hashtag?.[g.clave] ? ` (${r.usos_hashtag[g.clave]} en curso)` : "")).join(", ")}.</p>` : "");
+      })()}</div>
+      <div class="bloque"><h3>Mejores posts</h3>${r.mejores.map((p) => `<div class="mejor"><img src="${p.img}" alt="" loading="lazy"><div><p>${esc(p.texto.replace("{PATREON}", "🔗"))}</p><small>${p.vistas != null ? num(p.vistas) + " vistas" : num(p.interacciones) + " interacciones"}, ${p.hora}${p.link ? `, <a href="${esc(p.link)}" target="_blank" rel="noopener">ver</a>` : ""}</small></div></div>`).join("")}</div>
+    </div>
+    <p class="nota">Los promedios usan solo posts con 48 h o más (${r.maduros} de ${r.posts}). Con menos de 5 posts por grupo, tomalo como tendencia, no como conclusión.</p>`;
+}
+const fechaLarga = (f, h) => f ? new Date(`${f}T12:00:00`).toLocaleDateString("es-AR", { weekday: "short", day: "numeric", month: "short" }) + ` ${h}` : "sin fecha";
+// Los posts de X y Bluesky se programan en hora de Nueva York (config), pero el panel muestra todo en hora argentina.
+function instanteEn(fecha, hora, zona) {
+  const base = Date.parse(`${fecha}T${hora}:00Z`);
+  const enZona = (ms) => { const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: zona, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date(ms)).map((x) => [x.type, x.value])); return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute); };
+  let ms = base - (enZona(base) - base);
+  return base - (enZona(ms) - ms);
+}
+let ZONA_PUB = "America/New_York"; // se toma de la config al cargar (datos.zona)
+const fechaAR = (f, h, zona = ZONA_PUB) => (f && h ? new Date(instanteEn(f, h, zona)).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }) : fechaLarga(f, h));
+const horaAR1 = (h) => new Date(instanteEn(new Date().toISOString().slice(0, 10), h, ZONA_PUB)).toLocaleTimeString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+
+// Tareas de hoy (todas las redes): lo que pide una acción tuya. Arma el bloque Hoy y las insignias de las pestañas.
+function tareasHoy() {
+  const d = datos, T = [];
+  const add = (red, txt, n, destino, error = false) => n && T.push({ red, txt, n, destino, error });
+  const kx = d.por_red?.x?.kpis ?? {}, kb = d.por_red?.bsky?.kpis ?? {};
+  add("x", "Aprobar lote", d.kpis?.sin_aprobar, "lotes");
+  add("x", "Franjas sin post", kx.franjas_vacias?.length, "sec-seg", true);
+  add("x", "Posts con problema", kx.con_problema, "lotes", true);
+  add("x", "Faltan en Buffer", kx.en_espera_pronto?.length, "sec-seg", true);
+  add("x", "Respuestas por revisar", (d.x_respuestas ?? []).reduce((a, t) => a + t.posts.filter((p) => p.estado === "pendiente").length, 0), "sec-xr");
+  add("bsky", "Posts con problema", kb.con_problema, "lotes", true);
+  const B = d.bsky_inter;
+  if (B) add("bsky", "Para responder o seguir", B.posts.filter((p) => p.estado === "pendiente" && !p.saltar).length + B.cuentas.filter((c) => c.estado === "pendiente").length, "sec-bs");
+  if (d.pixiv) {
+    const k = d.pixiv.kpis;
+    add("pixiv", "Post atrasado", k.para_subir.length, "sec-seg", true);
+    add("pixiv", "Franjas sin post", k.franjas_vacias?.length, "sec-seg", true);
+    add("pixiv", "Aprobar lote", k.sin_aprobar, "lotes");
+    add("pixiv", "Posts con problema", k.con_problema, "lotes", true);
+    add("pixiv", "Obras para comentar", (d.pixiv.interaccion?.obras ?? []).filter((o) => o.estado === "pendiente" && !o.saltar).length, "sec-inter");
+  }
+  if (d.rule34) {
+    const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires" }).format(new Date());
+    add("rule34", "Subida para hoy", (d.rule34.subidas ?? []).filter((p) => p.estado === "pendiente" && p.fecha && p.fecha <= hoy).length, "r34-b-subidas");
+    add("rule34", "Subida para revisar", (d.rule34.subidas ?? []).filter((p) => p.estado === "revisar").length, "r34-b-subidas");
+  }
+  if (d.reddit && !d.reddit.plan?.pausa) add("reddit", "Posts para publicar", (d.reddit.posts ?? []).filter((p) => p.estado === "preparado").length, "rd-b-posts");
+  return T;
+}
+const NOMBRE_TAB = { x: "X", bsky: "Bluesky", pixiv: "Pixiv", reddit: "Reddit", rule34: "Rule34" };
+// "Todo hecho": primero hace todas las interacciones y después las marca juntas. Usa la misma
+// acción que el botón Hecho de cada tarjeta (con su registro), una por una. No toca las marcadas "Mejor saltarlo" ni
+// las que no tienen respuesta sugerida. Lo marcado se deshace desde Historial.
+function pendientesDe(red) {
+  if (red === "x") return (datos.x_respuestas ?? []).flatMap((t) => t.posts).filter((p) => p.estado === "pendiente" && !p.saltar && p.respuesta).map((p) => ["x_respuesta_estado", { id: p.id, estado: "hecho" }]);
+  if (red === "bsky") { const B = datos.bsky_inter; if (!B) return []; return [...B.posts.filter((p) => p.estado === "pendiente" && !p.saltar).map((p) => ["bsky_estado", { fecha: B.fecha, tipo: "post", id: p.uri, estado: "hecho" }]), ...B.cuentas.filter((c) => c.estado === "pendiente").map((c) => ["bsky_estado", { fecha: B.fecha, tipo: "cuenta", id: c.did, estado: "hecho" }])]; }
+  const I = datos.pixiv?.interaccion; if (!I) return [];
+  return (I.obras ?? []).filter((o) => o.estado === "pendiente" && !o.saltar).map((o) => ["interaccion_estado", { fecha: I.fecha, id: o.id, estado: "hecho" }]);
+}
+function pintarTodoHecho() { for (const b of document.querySelectorAll("[data-todo-hecho]")) b.hidden = !pendientesDe(b.dataset.todoHecho).length; }
+async function todoHecho(red) {
+  const lista = pendientesDe(red);
+  if (!lista.length) return;
+  const que = red === "bsky" ? "posts y cuentas" : red === "pixiv" ? "obras" : "respuestas";
+  if (!confirm(`¿Marcar como hechas las ${lista.length} ${que} de esta sección? Es lo mismo que tocar Hecho (o Seguida) en cada una. Si alguna no la hiciste, la deshacés desde Historial.`)) return;
+  let ok = 0;
+  for (const [accion, cuerpo] of lista) { try { await api(accion, cuerpo); ok++; } catch {} }
+  aviso(ok === lista.length ? `Listo: ${ok} marcadas como hechas.` : `Marqué ${ok} de ${lista.length}; las demás quedaron pendientes.`);
+}
+function pintarHoy() {
+  const T = tareasHoy();
+  $("#hoy").innerHTML = T.length
+    ? `<b>Hoy</b>${T.map((t, i) => `<button class="${t.error ? "error" : ""}" data-hoy="${i}"><span class="c">${t.n}</span>${esc(t.txt)} <span class="r">${NOMBRE_TAB[t.red]}</span></button>`).join("")}`
+    : `<b>Hoy</b><span class="al-dia">Todo al día</span>`;
+  $("#hoy").dataset.tareas = JSON.stringify(T.map((t) => [t.red, t.destino]));
+  return T;
+}
+function irA(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.tagName === "DETAILS") el.open = true;
+  el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+}
+// Índice: las secciones visibles de la pestaña, en el orden en que aparecen.
+function pintarIndice() {
+  const visible = (el) => !el.hidden && !el.closest("[hidden]") && getComputedStyle(el).display !== "none";
+  const L = [...document.querySelectorAll("[data-indice]")].filter(visible).filter((el) => el.id !== "lotes" || el.innerHTML.trim());
+  const firma = L.map((el) => el.id).join("|");
+  if ($("#indice").dataset.firma === firma) return;
+  $("#indice").dataset.firma = firma;
+  $("#indice").innerHTML = L.length > 2 ? L.map((el) => `<a href="#${el.id}" data-ir="${el.id}">${esc(el.dataset.indice)}</a>`).join("") : "";
+}
+// Ayuda plegable: una línea y "Ver más"; recuerda lo que dejaste abierto.
+function aplicarPlegables() {
+  for (const p of document.querySelectorAll("[data-plegable]")) {
+    const k = "pleg:" + p.dataset.plegable;
+    let b = p.nextElementSibling?.classList.contains("ver-mas") ? p.nextElementSibling : null;
+    if (!b) {
+      b = document.createElement("button"); b.type = "button"; b.className = "ver-mas";
+      p.after(b); p.classList.add("plegable");
+      try { if (localStorage.getItem(k) === "1") p.classList.add("abierto"); } catch {}
+      b.addEventListener("click", () => { const a = p.classList.toggle("abierto"); try { localStorage.setItem(k, a ? "1" : "0"); } catch {} b.textContent = a ? "Ver menos" : "Ver más"; });
+    }
+    const abierto = p.classList.contains("abierto");
+    b.textContent = abierto ? "Ver menos" : "Ver más";
+    b.hidden = p.hidden || !p.textContent.trim() || (!abierto && p.scrollHeight <= p.clientHeight + 2);
+  }
+}
+function pintarJob() {
+  const L = datos.trabajos ?? [];
+  $("#job").hidden = !L.length;
+  const min = (t) => Math.max(0, Math.round((Date.now() - Date.parse(t.inicio)) / 60e3));
+  $("#job").innerHTML = L.map((t) => `<span class="job-item" title="Solo esperan los botones que usan lo mismo. Detalle en Último trabajo."><span class="job-punto" aria-hidden="true"></span><span class="job-tipo">${esc(t.tipo)}…${min(t) ? ` (${min(t)} min)` : ""}</span><button class="btn chico" data-job-detener="${esc(t.grupo)}">Detener</button></span>`).join("");
+}
+// Pestañas: X y Bluesky comparten contenido; Pixiv tiene sus propios lotes (3 imágenes por post).
+const TABS = () => [...datos.redes, ...(datos.pixiv ? [{ clave: "pixiv", nombre: "Pixiv" }] : []), ...(datos.reddit ? [{ clave: "reddit", nombre: "Reddit" }] : []), ...(datos.rule34 ? [{ clave: "rule34", nombre: "Rule34" }] : [])];
+function pintarRedes() {
+  if (!TABS().some((r) => r.clave === red)) red = datos.redes[0].clave;
+  $("#redes").hidden = TABS().length < 2;
+  $("#redes").innerHTML = TABS().map((r) => {
+    const mias = tareasHoy().filter((t) => t.red === r.clave), prob = mias.reduce((a, t) => a + t.n, 0), grave = mias.some((t) => t.error);
+    return `<button role="tab" data-red="${r.clave}" aria-selected="${r.clave === red}" tabindex="${r.clave === red ? 0 : -1}">${esc(r.nombre)}${prob ? `<span class="insignia ${grave ? "" : "suave"}" aria-label="${prob} tarea(s) pendiente(s)">${prob}</span>` : ""}</button>`;
+  }).join("");
+}
+async function cargar(forzar) {
+  const activo = document.activeElement;
+  if (!forzar && activo && (activo.tagName === "TEXTAREA" || activo.classList?.contains("titulo"))) return; // no pisar lo que se está escribiendo
+  datos = await (await fetch("/api/estado")).json();
+  ZONA_PUB = datos.zona ?? ZONA_PUB;
+  pintar();
+}
+
+// Bluesky: crecer (sugerencias de posts para responder y cuentas para seguir).
+let autoBsky = false;
+function pedirBskySolo() {
+  const B = datos.bsky_inter;
+  if (autoBsky || ocup("bsky") || !B) return;
+  const quedan = B.posts.filter((p) => p.estado === "pendiente" && !p.saltar).length + B.cuentas.filter((c) => c.estado === "pendiente").length;
+  if (quedan || (B.intento && Date.now() - Date.parse(B.intento) < 2 * 3600e3)) return;
+  autoBsky = true;
+  api("bsky_sugerencias", { auto: true }).then((r) => { if (!r.omitido) { aviso("Buscando sugerencias nuevas para Bluesky."); cargar(true); } }).catch(() => {});
+}
+// Qué hacer con cada sugerencia: nunca se deduce de si hay botón Copiar. Toda sugerencia con
+// comentario es "like + comentario"; si conviene no tocarla (explícita, posible menor, política, autopromoción
+// descartada), se dice claro que no se interactúa, ni siquiera con like. No existe "solo like".
+const queHacer = (texto, saltar, red) => saltar
+  ? `<p class="que-hacer no">No interactúes con este post: ni like ni comentario.</p>`
+  : !texto
+    // Sin comentario y sin "saltar" = falló la redacción (no es "solo like"): se completa en la próxima búsqueda.
+    ? `<p class="que-hacer no">Falta el comentario (no se pudo escribir). Esperá: se completa solo en la próxima búsqueda${red === "x" ? "" : ", o tocá Buscar sugerencias"}.</p>`
+    : `<p class="que-hacer si">${red === "pixiv" ? "Dale like (o guardala en favoritos) y comentá esto:" : "Dale like y respondé con esto:"}</p>`;
+function pintarBsky(B) {
+  $("#bs-sugerencias").disabled = !!ocup("bsky");
+  const posts = B?.posts ?? [], cuentas = B?.cuentas ?? [];
+  const pp = posts.filter((p) => p.estado === "pendiente"), cp = cuentas.filter((c) => c.estado === "pendiente");
+  $("#bs-n").textContent = B?.generado ? `${pp.filter((p) => !p.saltar).length} posts y ${cp.length} cuentas por revisar` : "";
+  const buscando = !!ocup("bsky");
+  const tarjetaPost = (p) => `<article class="obra ${p.estado}" data-bs-tipo="post" data-bs-id="${esc(p.uri)}">
+    <img src="${p.mini}" alt="${esc(p.texto.slice(0, 80))}" data-full="${p.mini}" loading="lazy"><div class="obra-cuerpo">
+    <div><h3>${esc(p.autor)}</h3><div class="autor">@${esc(p.handle)} · ${num(p.seguidores)} seguidores · ${num(p.likes)} likes</div>
+    ${p.estado !== "pendiente" ? `<span class="etq est ${p.estado === "hecho" ? "ok" : "neutro"}">${p.estado === "hecho" ? "Respondido" : "Saltado"}</span>` : p.saltar ? `<span class="etq est aviso">Mejor saltarlo</span>` : ""}</div>
+    ${p.texto ? `<p class="trad">${esc([...p.texto].slice(0, 160).join(""))}</p>` : ""}
+    ${p.estado === "pendiente" ? queHacer(p.respuesta, p.saltar, "bsky") : ""}
+    ${p.respuesta && !p.saltar ? `<p class="com" lang="en">${esc(p.respuesta)}</p>` : ""}
+    ${p.nota ? `<p class="porque">${esc(p.nota)}</p>` : ""}
+    <div class="acciones">
+      <a class="btn chico principal" href="${esc(p.link)}" target="_blank" rel="noopener">Abrir post</a>
+      ${p.respuesta && !p.saltar ? `<button class="btn chico" data-rd-copiar="${esc(p.respuesta)}" title="Copiar la respuesta sugerida">Copiar</button>` : ""}
+      <span class="par">${p.estado === "pendiente" ? `<button class="btn chico" data-bs-estado="hecho">Hecho</button><button class="btn chico" data-bs-estado="saltado">Saltar</button>` : `<button class="btn chico" data-bs-estado="pendiente">Deshacer</button>`}</span>
+    </div></div></article>`;
+  const tarjetaCuenta = (c) => `<article class="conc" data-bs-tipo="cuenta" data-bs-id="${esc(c.did)}" style="${c.estado !== "pendiente" ? "opacity:.55" : ""}">
+    <h3>${esc(c.nombre)}</h3><p class="dato-c">@${esc(c.handle)} · ${num(c.seguidores)} seguidores · sigue a ${num(c.siguiendo)}</p>
+    ${c.por_que ? `<p>${esc(c.por_que)}</p>` : ""}
+    <div class="acciones"><a class="btn chico principal" href="${esc(c.link)}" target="_blank" rel="noopener">Ver perfil</a>
+    ${c.estado === "pendiente" ? `<button class="btn chico" data-bs-estado="hecho">Seguida</button><button class="btn chico" data-bs-estado="saltado">Saltar</button>` : `<button class="btn chico" data-bs-estado="pendiente">Deshacer</button>`}</div></article>`;
+  $("#bs-inter").innerHTML = (buscando ? `<div class="vacio"><b>Buscando posts y cuentas…</b>Tarda unos minutos.</div>` : "")
+    + `<h3 class="rd-grupo">Posts para responder</h3>`
+    + (pp.length ? `<div class="inter-grilla h">${[...pp].sort((a, b) => a.saltar - b.saltar).map(tarjetaPost).join("")}</div>` : `<div class="vacio"><b>No hay posts por responder</b>Busco nuevos al abrir el panel (cada 2 horas como mucho) o tocá Buscar sugerencias.</div>`)
+    + `<h3 class="rd-grupo">Cuentas para seguir</h3>`
+    + (cp.length ? `<div class="inter-grilla">${cp.map(tarjetaCuenta).join("")}</div>` : `<div class="vacio"><b>No hay cuentas por revisar</b></div>`);
+}
+// Pedido para Grok: formato fijo (una línea por post) para leerlo sin errores, link directo de la imagen (para mirarla
+// antes de escribir) y lista de lo que ya pasó (para que no repita).
+// Personajes de los packs de Patreon (salen del banco, igual que en Bluesky): los pedidos de X priorizan esos.
+const nombrePj = (p) => p === "leblanc" ? "LeBlanc" : p.charAt(0).toUpperCase() + p.slice(1);
+const pjsMarca = () => (datos.personajes_marca ?? []).map(nombrePj);
+function pedidoGrok() {
+  const ex = datos.x_excluir ?? { cuentas: [], links: [] };
+  return [
+    // apuntar a quien consume, no solo a otros creadores: 4 posts de fans charlando de LoL (skins,
+    // su main, eventos, Arcane), 3 de cuentas que repostean o juntan fanart y 3 de fanart.
+    "Find 10 posts from the last 24 hours on X from League of Legends and Arcane FANS (the people who enjoy fan art, not only the artists), from accounts with between 2,000 and 100,000 followers, that already have some replies and likes. Mix: 4 posts where fans talk about League of Legends (a new or favorite skin, their main champion, an event, Arcane), 3 posts from accounts that share or curate fan art (not the original artists), and 3 fan art posts" + (pjsMarca().length ? ` (prioritize these characters: ${pjsMarca().join(", ")})` : "") + ". Skip official Riot, esports teams, pro players and news outlets, accounts whose bio says no AI or no NSFW, drama or toxic threads, and anything explicit, political or with minors (this includes League of Legends yordles such as Lulu, Poppy, Tristana, Teemo, Vex or Yuumi, and Annie or Zoe).",
+    "Never include a post you already gave me earlier in this chat." + (ex.cuentas.length ? ` Do not include posts from these accounts: ${ex.cuentas.join(", ")}.` : "") + (ex.links.length ? ` Do not include these posts: ${ex.links.join(" ")}` : ""),
+    "Answer ONLY with one line per post, in this exact format, nothing else:",
+    "POST | <link to the post> | @<account> | <followers> | <direct image URL (pbs.twimg.com/media/...), or none> | <type: fan talk, curator or fan art> - <what the post is about and, if it has an image, what it shows: time of day (day, night or unclear), main colors, setting, character>",
+    "Describe only what you can actually see. If you are not sure about a visual detail, write \"unclear\" instead of guessing.",
+  ].join("\n");
+}
+// Pedido para una IA de navegador, con la sesión de {{X}} abierta en x.com: busca en
+// X con búsquedas armadas (últimas 24 h, con imagen, con algo de interacción) y devuelve el mismo formato que Grok.
+// Solo lectura. El panel comprueba después cada link contra X y descarta los que no existen o son viejos.
+function pedidoNavegador() {
+  const ex = datos.x_excluir ?? { cuentas: [], links: [] };
+  const desde = new Date(Date.now() - 86400e3).toISOString().slice(0, 10);
+  const busq = (q) => `https://x.com/search?q=${encodeURIComponent(`${q} filter:images -filter:replies min_faves:15 since:${desde}`)}&f=live`;
+  return [
+    "You are in my browser, logged in to X as {{X}}. READ ONLY: never like, reply, repost, quote, bookmark, follow or send messages, and do not click any button except to open posts or profiles.",
+    // apuntar a quien consume (fans que charlan de LoL y cuentas que juntan fanart), no solo a artistas.
+    "Goal: find 10 recent posts on X from League of Legends and Arcane FANS that I could reply to as a fellow fan and player. Mix: about 4 posts where fans talk about the game (a new or favorite skin, their main champion, an event, Arcane), about 3 from accounts that share or curate fan art (not the original artists), and about 3 fan art posts. Open these searches (Latest tab) and scroll a little in each:",
+    `https://x.com/search?q=${encodeURIComponent(`("league of legends" OR #LeagueOfLegends) ("new skin" OR "my main" OR "favorite skin" OR "skin line" OR "which skin") -filter:replies min_faves:15 since:${desde}`)}&f=live`,
+    busq("(\"league of legends\" OR #LeagueOfLegends OR #LoL) (fanart OR #fanart OR art)"),
+    // Nami y Aurora comparten nombre con otras cosas (One Piece, auroras): van con "league of legends".
+    busq(`(#Arcane OR #ArcaneFanart${pjsMarca().filter((p) => !["Nami", "Aurora"].includes(p)).map((p) => ` OR #${p}`).join("")}) (fanart OR art)`),
+    ...pjsMarca().filter((p) => ["Nami", "Aurora"].includes(p)).map((p) => busq(`${p} "league of legends"`)),
+    (pjsMarca().length ? `Prioritize these characters when you can: ${pjsMarca().join(", ")}.
+` : "") + "Pick posts from accounts with roughly 2,000 to 100,000 followers (hover the name or open the profile to check; if you can't see it, write unknown) that already have some replies and likes. Skip official Riot, esports teams, pro players and news outlets, accounts whose bio says no AI or no NSFW, drama or toxic threads, and anything explicit, political, or with characters who look like minors (this includes League of Legends yordles such as Lulu, Poppy, Tristana, Teemo, Vex or Yuumi, and Annie or Zoe).",
+    ex.cuentas.length ? `Do not include posts from these accounts (I already replied to them recently): ${ex.cuentas.join(", ")}.` : "",
+    "Only list posts you actually opened. Fewer than 10 is fine; never fill the list with guesses. If you cannot access X, answer only: NO ACCESS.",
+    "Answer ONLY with one line per post, in this exact format, nothing else:",
+    "POST | <link to the post> | @<account> | <followers or unknown> | <direct image URL (pbs.twimg.com/media/...), or none> | <type: fan talk, curator or fan art> - <what the post is about and, if it has an image, what it shows: time of day (day, night or unclear), main colors, setting, character>",
+    "Describe only what you can see. If you are not sure about a visual detail, write \"unclear\".",
+  ].filter(Boolean).join("\n");
+}
+function pintarXr(tandas) {
+  for (const b of document.querySelectorAll("#xr-form button")) b.disabled = !!ocup("xr");
+  const generando = !!ocup("xr");
+  const tarjeta = (p) => `<article class="obra ${p.estado}" data-xr="${esc(p.id)}">
+    ${p.mini ? `<img src="${p.mini}" alt="${esc(p.resumen ?? "")}" data-full="${p.mini}" loading="lazy">` : ""}<div class="obra-cuerpo">
+    <div><h3>${esc(p.cuenta ?? "Post de X")}</h3><div class="autor">${esc(p.resumen ?? "")}${p.mini ? "" : " · <i>sin imagen: respuesta sin detalles visuales</i>"}</div>${p.saltar ? `<span class="etq est aviso">Mejor saltarlo</span>` : ""}</div>
+    ${p.estado === "pendiente" ? queHacer(p.respuesta, p.saltar, "x") : ""}
+    ${p.respuesta && !p.saltar ? `<p class="com" lang="en">${esc(p.respuesta)}</p>` : p.nota ? `<p class="porque">Motivo: ${esc(p.nota)}</p>` : ""}
+    <div class="acciones">
+      ${p.link ? `<a class="btn chico principal" href="${esc(p.link)}" target="_blank" rel="noopener">Abrir en X</a>`
+        : /^@\w{1,15}$/.test(p.cuenta ?? "") ? `<a class="btn chico principal" href="https://x.com/search?q=${encodeURIComponent(`from:${p.cuenta.slice(1)} filter:images`)}&f=live" target="_blank" rel="noopener" title="No vino el link del post: abre los últimos posts con imagen de la cuenta; es el de la foto">Buscar en X</a>` : ""}
+      ${p.respuesta && !p.saltar ? `<button class="btn chico" data-rd-copiar="${esc(p.respuesta)}" title="Copiar la respuesta sugerida">Copiar</button>` : ""}
+      <span class="par">${p.estado === "pendiente" ? `<button class="btn chico" data-xr-estado="hecho">Hecho</button><button class="btn chico" data-xr-estado="saltado">Saltar</button>` : `<button class="btn chico" data-xr-estado="pendiente">Deshacer</button>`}</span>
+    </div></div></article>`;
+  const conPend = (tandas ?? []).map((t) => ({ ...t, pend: t.posts.filter((p) => p.estado === "pendiente") })).filter((t) => t.pend.length);
+  const nPend = conPend.reduce((a, t) => a + t.pend.length, 0);
+  $("#xr-n").textContent = nPend ? `${nPend} por revisar` : "";
+  $("#xr").innerHTML = (generando ? `<div class="vacio"><b>Escribiendo respuestas…</b>Tarda un minuto.</div>` : "")
+    + (conPend.length ? conPend.map((t) => `<p class="dato-c" style="margin:14px 0 6px">${new Date(t.creado).toLocaleString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })} · ${t.pend.length} por revisar${t.descartados && (t.descartados.inexistentes + t.descartados.viejos) ? ` · descarté ${t.descartados.inexistentes ? `${t.descartados.inexistentes} inexistente(s)` : ""}${t.descartados.inexistentes && t.descartados.viejos ? " y " : ""}${t.descartados.viejos ? `${t.descartados.viejos} viejo(s)` : ""}` : ""}</p><div class="inter-grilla h">${t.pend.map(tarjeta).join("")}</div>`).join("")
+      : generando ? "" : `<p class="linea-vacia"><b>No hay respuestas por revisar.</b> Pedile posts nuevos a Grok y pegá su respuesta arriba. Lo que ya marcaste está en Historial.</p>`);
+}
+
+// Traductor con la voz de la marca: x-traducir.mjs.
+function pintarXt(lista) {
+  const generando = !!ocup("xt");
+  $("#xt-form button").disabled = generando;
+  const op = (t) => `<div class="op"><span lang="en">${esc(t)} <small class="dato-c">(${[...t].length} car.)</small></span><button class="btn chico" data-rd-copiar="${esc(t)}">Copiar</button></div>`;
+  $("#xt-n").textContent = (lista ?? []).length ? `últimas ${lista.length}` : "";
+  $("#xt-limpiar").hidden = !(lista ?? []).length || generando;
+  $("#xt").innerHTML = (generando ? `<div class="vacio"><b>Pasando al inglés…</b>Tarda menos de un minuto.</div>` : "")
+    + ((lista ?? []).length ? (lista ?? []).map((t, i) => `<div class="rd-com"${i ? "" : ` style="border-color:var(--acento,currentColor)"`}>
+      <p class="dato-c">${new Date(t.creado).toLocaleString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })} · ${t.tipo === "respuesta" ? "respuesta" : "post"}${t.idioma_original ? ` · desde ${esc(t.idioma_original)}` : ""}</p>
+      <p class="dato-c" style="margin:2px 0 6px"><i>${esc(t.original.slice(0, 300))}</i></p>
+      ${[t.ingles, ...(t.alternativas ?? [])].map(op).join("")}
+      ${t.notas ? `<p class="porque">${esc(t.notas)}</p>` : ""}</div>`).join("")
+      : generando ? "" : `<p class="linea-vacia">Todavía no tradujiste nada.</p>`);
+}
+
+// Reddit: asistente.
+const SI_RD = { si: "sí", no: "no", no_dice: "?", mixto: "mixto" };
+const ESTADO_RD = { sirve: ["ok", "Sirve"], candidato: ["neutro", "Sin verificar"], no_sirve: ["error", "No sirve"], descartado: ["neutro", "Descartado"] };
+let rdReglasAbierto = null;
+// Rule34: asistente de subida (la IA prepara, la persona a cargo sube a mano).
+function pintarSubidas34(L, ocupado) {
+  const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires" }).format(new Date());
+  const pend = [...L.filter((p) => p.estado === "pendiente"), ...L.filter((p) => p.estado === "revisar")];
+  $("#r34-sub-n").textContent = L.length ? `${pend.filter((p) => p.fecha && p.fecha <= hoy).length} para hoy · ${pend.length} pendientes · ${L.filter((p) => p.estado === "subido").length} subidas` : "";
+  $("#r34-prep-form button").disabled = ocupado;
+  if (!L.length) { $("#r34-subidas").innerHTML = `<div class="vacio"><b>Nada preparado todavía</b>Poné la carpeta con las imágenes limpias y el link del post donde están, y tocá Preparar subidas.</div>`; return; }
+  const EST = { revisar: ["error", "Revisar"], pendiente: ["aviso", "Pendiente"], subido: ["ok", "Subida"], saltado: ["neutro", "Saltada"] };
+  const cuando = (f) => (!f ? "" : f <= hoy ? "hoy" : new Date(`${f}T12:00:00`).toLocaleDateString("es-AR", { weekday: "short", day: "numeric", month: "short" }));
+  const tarjeta = (p) => { const [c, t] = EST[p.estado] ?? ["neutro", p.estado]; const activa = p.estado === "pendiente" || p.estado === "revisar"; return `<article class="r34-sub ${p.estado}">
+    <img src="${esc(p.img)}" alt="${esc(p.titulo ?? p.nombre)}" loading="lazy">
+    <div class="r34-sub-cuerpo">
+      <div><span class="etq est ${c}">${t}</span> ${activa && p.fecha ? `<b>${cuando(p.fecha)}</b>` : ""}${p.estado === "subido" ? ` <span class="dato-c">${new Date(p.subido).toLocaleDateString("es-AR")}</span>${p.post_id ? ` · <a href="https://rule34.xxx/index.php?page=post&amp;s=view&amp;id=${esc(p.post_id)}" target="_blank" rel="noopener">ver post</a>` : ""}` : ""} <span class="dato-c">${esc(p.nombre)}${p.medidas ? ` · ${esc(p.medidas.replace(",", "×"))}` : ""}</span></div>
+      ${p.problemas?.length ? `<div class="alerta error">${p.problemas.map(esc).join(" · ")}</div>` : ""}
+      ${p.nota ? `<p class="dato-c">${esc(p.nota)}</p>` : ""}
+      <div class="r34-campo"><span>Source</span><code>${esc(p.source)}</code><button class="btn chico" data-r34-copiar="${esc(p.source)}">Copiar</button></div>
+      <div class="r34-campo"><span>Título</span><code>${esc(p.titulo ?? "")}</code><button class="btn chico" data-r34-copiar="${esc(p.titulo ?? "")}">Copiar</button></div>
+      <div class="r34-campo"><span>Etiquetas</span><code class="largo">${esc(p.etiquetas ?? "")}</code><button class="btn chico" data-r34-copiar="${esc(p.etiquetas ?? "")}">Copiar</button></div>
+      <div class="r34-campo"><span>Rating</span><b>${p.rating === "explicit" ? "Explicit" : "Questionable"}</b></div>
+      ${activa ? `<div class="acciones"><button class="btn chico" data-r34-abrir="${p.id}">Mostrar archivo</button><a class="btn chico" href="https://rule34.xxx/index.php?page=post&amp;s=add" target="_blank" rel="noopener">Abrir formulario</a>${p.estado === "revisar" ? `<button class="btn chico" data-r34-marcar="${p.id}" data-estado="pendiente">Ya lo revisé: está bien</button>` : `<button class="btn chico principal" data-r34-marcar="${p.id}" data-estado="subido">La subí</button>`}<button class="btn chico" data-r34-marcar="${p.id}" data-estado="saltado">Saltar</button></div>` : `<div class="acciones"><button class="btn chico" data-r34-marcar="${p.id}" data-estado="pendiente">Volver a pendiente</button></div>`}
+    </div></article>`; };
+  const hechas = L.filter((p) => !(p.estado === "pendiente" || p.estado === "revisar"));
+  $("#r34-subidas").innerHTML = `<div class="r34-subs">${pend.map(tarjeta).join("")}</div>${hechas.length ? `<details><summary class="dato-c" style="cursor:pointer;margin-top:12px">Subidas y saltadas (${hechas.length})</summary><div class="r34-subs">${hechas.map(tarjeta).join("")}</div></details>` : ""}`;
+}
+// Personajes que la marca no hace (pueden parecer menores): no se muestran como oportunidad aunque tengan demanda.
+// Rule34: análisis por la API (solo lectura), con veredictos. Se actualiza siempre a mano.
+function pintarR34() {
+  const R = datos.rule34;
+  const ocupado = !!ocup("rule34");
+  $("#r34-estado").textContent = R.clave ? `key cargada (user_id ${R.usuario})` : "falta la key";
+  $("#r34-cambiar").hidden = !R.clave;
+  if (!R.clave) $("#r34-clave-form").hidden = false; else if (!$("#r34-clave-form").dataset.listo) $("#r34-clave-form").hidden = true;
+  $("#r34-clave-form").dataset.listo = "1";
+  if (!$("#r34-uid").value) $("#r34-uid").value = R.usuario ?? "";
+  for (const b of document.querySelectorAll("#sec-r34 form button")) b.disabled = ocupado;
+  $("#r34-form button").disabled = ocupado || !R.clave;
+  pintarSubidas34(R.subidas ?? [], ocupado);
+  const e = R.analisis;
+  $("#r34-form button").textContent = e ? "Actualizar análisis" : "Hacer el análisis";
+  $("#r34-n").textContent = e ? `actualizado el ${new Date(e.creado).toLocaleString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : "";
+  if (e && !$("#r34-nicho").dataset.tocado) $("#r34-nicho").value = e.nicho;
+  if (!e) { $("#r34-res").innerHTML = `<div class="vacio"><b>Todavía no hay análisis</b>${R.clave ? "Tocá Hacer el análisis. Tarda unos minutos: lee el nicho (con IA y a mano), las franquicias del público, la plataforma, lo borrado y los comentarios de los más votados, y arma los veredictos." : "Primero generá y cargá la key (arriba)."}</div>`; return; }
+  const n = (v) => (v == null ? "s/d" : typeof v === "number" ? v.toLocaleString("es-AR") : esc(v));
+  const pct = (v) => (v == null ? "s/d" : `${v.toLocaleString("es-AR")} %`);
+  const tabla = (cab, filas) => filas.length ? `<div class="tabla-r34"><table class="so-tabla"><thead><tr>${cab.map((c) => `<th>${c}</th>`).join("")}</tr></thead><tbody>${filas.join("")}</tbody></table></div>` : `<p class="dato-c">Sin datos.</p>`;
+  const A = e.anterior;
+  const delta = (v, a) => (v == null || a == null || v === a ? "" : ` <span class="dato-c">(${v > a ? "+" : ""}${(Math.round((v - a) * 10) / 10).toLocaleString("es-AR")})</span>`);
+  const C = e.comentarios ?? {};
+  const lista = (l, conEj) => (l ?? []).map((x) => `<li><b>${esc(x.tema)}</b> <span class="dato-c">(${x.veces})</span>${conEj && x.ejemplo ? `<br><span class="dato-c">"${esc(x.ejemplo)}"</span>` : ""}</li>`).join("") || `<li class="dato-c">Sin datos.</li>`;
+  const chips = (l) => (l ?? []).map((t) => `<span title="${t.posts} posts">${esc(t.etiqueta)} ×${t.efecto}</span>`).join("") || `<span class="dato-c">Sin datos.</span>`;
+  const TIPO = { hacer: ["ok", "Hacer"], evitar: ["error", "Evitar"], vigilar: ["aviso", "Vigilar"] };
+  const P = e.plataforma, B = e.borrados;
+  $("#r34-res").innerHTML = `
+    ${e.avisos?.length ? `<div class="alerta aviso">Datos incompletos: ${esc(e.avisos.join(" | "))}</div>` : ""}
+    ${e.resumen ? `<p class="r34-resumen">${esc(e.resumen)}</p>` : ""}
+    <h3 class="rd-grupo">Veredictos</h3>
+    <div class="r34-ver">${(e.veredictos ?? []).map((v) => { const [c, t] = TIPO[v.tipo] ?? ["neutro", v.tipo]; return `<article class="r34-v ${c}"><div><span class="etq est ${c}">${t}</span> <span class="dato-c">certeza ${esc(v.certeza ?? "?")}</span></div><b>${esc(v.titulo)}</b><p>${esc(v.por_que)}</p></article>`; }).join("") || `<p class="dato-c">Sin veredictos.</p>`}</div>
+
+    <h3 class="rd-grupo">Qué prefieren los usuarios</h3>
+    <p class="dato-c">De los comentarios de ${C.posts_leidos ?? 0} posts con IA muy votados${C.positivos_pct != null ? `: ${pct(C.positivos_pct)} positivos, ${pct(C.neutros_pct)} neutros, ${pct(C.negativos_pct)} negativos (${n(C.comentarios_leidos)} comentarios)` : ""}.</p>
+    <div class="grilla-r34"><div><b>Elogian</b><ul>${lista(C.elogios, true)}</ul></div><div><b>Se quejan de</b><ul>${lista(C.quejas, true)}</ul></div><div><b>Piden</b><ul>${lista(C.pedidos)}</ul></div></div>
+    <p><b>Etiquetas que suben el puntaje</b></p><div class="rd-chips">${chips(e.etiquetas_suben?.slice(0, 20))}</div>
+    <p><b>Etiquetas que lo bajan</b></p><div class="rd-chips">${chips(e.etiquetas_bajan?.slice(0, 12))}</div>
+    <p class="dato-c">×1,5 = los posts con IA con esa etiqueta tienen un puntaje mediano 50 % más alto que el del nicho. Es correlación, no garantía.</p>
+
+    <h3 class="rd-grupo">Sugerente contra explícito (posts con IA del nicho)</h3>
+    ${e.tono ? (() => { const T = e.tono, At = A?.tono; const fila = (k, v, a) => `<tr><td><b>${k}</b></td><td>${n(v.posts)}</td><td>${pct(v.pct)}${delta(v.pct, a?.pct)}</td><td>${n(v.por_dia)}</td><td>${n(v.puntaje_mediano)}${delta(v.puntaje_mediano, a?.puntaje_mediano)}</td><td>${n(v.comentarios_promedio)}</td><td class="dato-c">${v.muestra} posts de ${esc(v.ventana)}</td></tr>`;
+      const sub = (l) => (l ?? []).map((x) => `<span title="${x.muestra} posts maduros">${esc(x.etiqueta)} · ${n(x.puntaje_mediano)}</span>`).join("") || `<span class="dato-c">Sin datos.</span>`;
+      return tabla(["", "Posts leídos", "Del total", "Por día", "Puntaje mediano", "Comentarios promedio", "Base"], [fila("Sugerente (questionable)", T.sugerente, At?.sugerente), fila("Explícito (explicit)", T.explicito, At?.explicito)])
+        + `<p><b>Qué sugerente rinde más</b> <span class="dato-c">(puntaje mediano por etiqueta)</span></p><div class="rd-chips">${sub(T.sugerente.subtipos)}</div>
+        <p><b>Qué explícito rinde más</b></p><div class="rd-chips">${sub(T.explicito.subtipos)}</div>
+        ${T.personajes?.length ? `<p><b>Por personaje</b> <span class="dato-c">(puntaje mediano en cada tono)</span></p>${tabla(["Personaje", "Sugerente", "Explícito", "Posts"], T.personajes.map((x) => `<tr><td>${esc(x.personaje)}</td><td>${n(x.sugerente)}</td><td>${n(x.explicito)}</td><td class="dato-c">${x.n_sugerente} y ${x.n_explicito}</td></tr>`))}` : ""}
+        <p class="dato-c">Sugerente es lo que podés enlazar a tu pack gratis de Patreon; explícito tiene que apuntar a X, a una galería propia o al contenido pago. Es correlación: el puntaje también depende del personaje y la calidad.</p>`; })() : `<p class="dato-c">Se calcula en el próximo análisis (tocá Actualizar análisis).</p>`}
+
+    <h3 class="rd-grupo">El nicho "${esc(e.nicho)}": IA contra a mano</h3>
+    ${tabla(["", "Posts leídos", "Por día", "Puntaje mediano", "Puntaje promedio", "Comentarios promedio"], [["Con IA", e.ia, A?.ia], ["A mano", e.mano, A?.mano]].map(([k, v, a]) => `<tr><td><b>${k}</b></td><td>${n(v.posts)}</td><td>${n(v.por_dia)}${delta(v.por_dia, a?.por_dia)}</td><td>${n(v.puntaje_mediano)}${delta(v.puntaje_mediano, a?.puntaje_mediano)}</td><td>${n(v.puntaje_promedio)}</td><td>${n(v.comentarios_promedio)}</td></tr>`))}
+    <p class="dato-c">Puntaje = votos (en Rule34 solo suman). Los posts de menos de 7 días no cuentan para comparar. Entre paréntesis, el cambio desde el análisis anterior.</p>
+
+    <h3 class="rd-grupo">Personajes: demanda contra oferta</h3>
+    <p class="dato-c">Oportunidad alta = los posts con IA de ese personaje rinden más que el promedio del nicho y todavía hay pocos con IA frente a los hechos a mano. Los yordles no figuran: las reglas los prohíben.</p>
+    ${tabla(["Personaje", "Posts con IA", "A mano", "Puntaje mediano con IA", "Oportunidad"], (e.personajes ?? []).filter((p) => !(datos.prohibidos ?? []).some((y) => p.personaje === y || p.personaje.startsWith(y + "_"))).slice(0, 20).map((p) => `<tr><td>${esc(p.personaje)}</td><td>${n(p.posts_ia)}</td><td>${n(p.posts_mano)}</td><td>${n(p.puntaje_mediano_ia)}</td><td>${p.oportunidad ?? "pocos datos"}</td></tr>`))}
+
+    <h3 class="rd-grupo">Franquicias del público</h3>
+    ${tabla(["Franquicia", "Posts", "Con IA", "% IA", "IA por día", "Puntaje mediano IA (posts de 7 a 14 días)"], (e.franquicias ?? []).map((x) => { const a = A?.franquicias?.find((y) => y.franquicia === x.franquicia); return `<tr><td>${esc(x.franquicia)}</td><td>${n(x.posts)}</td><td>${n(x.posts_ia)}</td><td>${pct(x.ia_pct)}</td><td>${n(x.ia_por_dia)}</td><td>${n(x.puntaje_mediano_ia)}${delta(x.puntaje_mediano_ia, a?.puntaje_mediano_ia)}</td></tr>`; }))}
+
+    <h3 class="rd-grupo">Hacia dónde va la plataforma</h3>
+    ${P ? `<p>${pct(P.ia_pct_total)} de todo Rule34 es IA; en los últimos 1000 posts subidos, ${pct(P.ia_pct_ultimos_1000)}${delta(P.ia_pct_ultimos_1000, A?.plataforma?.ia_pct_ultimos_1000)}. Se suben unos ${n(P.por_dia)} posts por día.</p>
+    ${tabla(["Mes", "Posts con IA del nicho", "Puntaje mediano IA", "Posts a mano", "Puntaje mediano a mano"], (P.nicho_por_mes_ia ?? []).map((m) => { const h = (P.nicho_por_mes_mano ?? []).find((x) => x.mes === m.mes); return `<tr><td>${m.mes}</td><td>${n(m.posts)}</td><td>${n(m.puntaje_mediano)}</td><td>${n(h?.posts)}</td><td>${n(h?.puntaje_mediano)}</td></tr>`; }))}
+    <p class="dato-c">Los meses más viejos pueden verse incompletos: se leen los últimos 3000 posts de cada grupo.</p>` : `<p class="dato-c">Sin datos.</p>`}
+
+    <h3 class="rd-grupo">Lo que se borra</h3>
+    ${B ? `<p>Desde el post ${n(B.desde_id)}: ${n(B.del_nicho_con_ia)} posts con IA del nicho borrados contra ${n(B.vivos_del_nicho_con_ia)} que siguen (${pct(B.borrado_pct_nicho)} borrado). En toda la plataforma, ${n(B.con_ia)} de ${n(B.leidos)} borrados eran IA.</p>
+    <p><b>Etiquetas que aparecen más en lo borrado con IA</b></p><div class="rd-chips">${(B.etiquetas_sobre_representadas ?? []).map((t) => `<span title="${t.borrados} borrados">${esc(t.etiqueta)} ×${t.veces_mas}</span>`).join("") || `<span class="dato-c">Sin datos.</span>`}</div>
+    <p class="dato-c">×3 = esa etiqueta aparece tres veces más en los posts con IA borrados que en los que siguen. Señal de qué no subir.</p>` : `<p>La API no permite medirlo: de lo borrado solo da el número y una huella, sin etiquetas ni fecha. Lo que se sabe por las reglas: borran la IA con <b>marca de agua o link</b>, <b>anatomía o ropa raras</b>, <b>cualquier cosa que parezca menor</b> (bajos, petite, chibi), <b>series repetitivas</b>, lo que <b>no es porno</b> (un escote solo no alcanza), lo <b>fotorrealista</b> y lo que <b>imita el estilo de un artista</b>. Ver <span class="mono">docs/rule34.md</span>.</p>`}
+
+    <h3 class="rd-grupo">Quienes suben IA y mejor les va</h3>
+    ${tabla(["Usuario", "Posts", "Puntaje mediano", "Source principal"], (e.artistas_ia ?? []).map((a) => `<tr><td>${esc(a.usuario)}</td><td>${n(a.posts)}</td><td>${n(a.puntaje_mediano)}</td><td>${esc(a.source_principal)}</td></tr>`))}
+    <p class="dato-c">Adónde apunta el source de los posts con IA: ${(e.sources_ia ?? []).map((x) => `${esc(x.dominio)} (${x.posts})`).join(", ") || "s/d"}.</p>
+
+    <h3 class="rd-grupo">Los más votados con IA</h3>
+    <ul>${(e.top_ia ?? []).map((p) => `<li><a href="${esc(p.link)}" target="_blank" rel="noopener">${p.puntaje} votos, ${p.comentarios} comentarios</a> <span class="dato-c">${esc(p.personajes.join(", "))}</span></li>`).join("")}</ul>`;
+}
+function pintarReddit() {
+  const R = datos.reddit;
+  const ocupado = !!ocup("reddit");
+  for (const b of document.querySelectorAll("#sec-reddit form button")) b.disabled = ocupado;
+  const subs = R.subreddits;
+  const hoyAR = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires" }).format(new Date());
+  const calentando = !!R.plan?.links_desde && hoyAR < R.plan.links_desde;
+  const pausa = R.plan?.pausa;
+  $("#rd-plan").innerHTML = pausa ? `<div class="alerta error" style="margin-bottom:12px"><b>Reddit en pausa desde el ${fechaPx(pausa.desde)}.</b> ${esc(pausa.motivo)} No se preparan posts. No crees otra cuenta de la marca ni publiques sus imágenes desde otro usuario: Reddit lo toma como evasión de ban.<br><button class="btn chico" id="rd-ver-todo" style="margin-top:8px">${$("#sec-reddit").classList.contains("ver") ? "Ocultar subreddits y herramientas" : "Ver subreddits y herramientas igual"}</button></div>` : R.plan ? `<div class="alerta ${calentando ? "aviso" : "ok"}" style="margin-bottom:12px">${calentando ? `<b>Calentamiento de la cuenta:</b> por ahora, comentarios genuinos y algunos posts <b>sin link</b> en los principales. <b>Desde el ${fechaPx(R.plan.links_desde)}</b>, links según cada subreddit y se suma r/unstable_diffusion.` : `<b>Cuenta lista:</b> links según cada subreddit (mirá "Cuándo poner el link" en cada tarjeta).`}</div>` : "";
+  $("#rd-subs-n").textContent = `${subs.filter((s) => s.estado === "sirve").length} sirven · ${subs.length} en la lista`;
+  const trab = ocup("reddit")?.tipo ?? "";
+  const chip = (k, v) => `<span class="${v === "si" ? "si" : v === "no" ? "no" : ""}">${k}: ${SI_RD[v] ?? "?"}</span>`;
+  const tarjetaSub = (s) => {
+    const [cl, txt] = ESTADO_RD[s.estado] ?? ["neutro", s.estado];
+    return `<article class="rd-sub ${s.estado}" data-sub="${esc(s.nombre)}">
+      <h3><a href="https://www.reddit.com/r/${esc(s.nombre)}/" target="_blank" rel="noopener">r/${esc(s.nombre)}</a><span class="etq est ${cl}">${txt}</span>${s.rol && s.estado !== "descartado" ? `<span class="etq pat">${esc(s.rol)}</span>` : ""}${s.verificado ? `<span class="dato-c">reglas leídas</span>` : s.revision_previa ? `<span class="dato-c">${esc(s.revision_previa)}</span>` : `<span class="dato-c">según el buscador: confirmalo</span>`}${s.miembros ? `<span class="dato-c">${num(s.miembros)} miembros</span>` : ""}</h3>
+      ${s.descripcion ? `<p>${esc(s.descripcion)}</p>` : ""}
+      <div class="rd-chips">${chip("IA", s.acepta_ia)}${chip("fanart", s.acepta_fanart)}${chip("NSFW", s.nsfw)}${chip("links", s.permite_links)}</div>
+      ${s.que_publicar ? `<p><b>Qué publicar:</b> ${esc(s.que_publicar)}</p>` : ""}
+      ${s.frecuencia_link && s.estado !== "descartado" ? `<p><b>Cuándo poner el link:</b> ${esc(s.frecuencia_link)}${calentando ? ` <span class="dato-c">(desde el ${fechaPx(R.plan.links_desde)})</span>` : ""}</p>` : ""}
+      ${s.notas_descarte && s.estado === "descartado" ? `<p class="dato-c">Descartado: ${esc(s.notas_descarte)}</p>` : ""}
+      ${s.promocion ? `<p><b>Patreon / links:</b> ${esc(s.promocion)}${s.enlace_promo ? ` <a href="${esc(s.enlace_promo)}" target="_blank" rel="noopener">Hilo de autopromoción</a>` : ""}</p>` : ""}
+      ${s.requisitos ? `<p class="dato-c">Requisitos: ${esc(s.requisitos)}</p>` : ""}${s.formato_titulo ? `<p class="dato-c">Título: ${esc(s.formato_titulo)}</p>` : ""}${s.flair ? `<p class="dato-c">Flair: ${esc(s.flair)}</p>` : ""}
+      ${s.notas ? `<p class="dato-c">${esc(s.notas)}</p>` : ""}
+      ${rdReglasAbierto === s.nombre ? `<textarea id="rd-reglas" placeholder="Pegá acá las reglas de r/${esc(s.nombre)} (las ves en el costado o en la pestaña About del subreddit)"></textarea>
+        <div class="acciones"><button class="btn chico principal" data-rd-clasificar="${esc(s.nombre)}" ${ocupado ? "disabled" : ""}>Clasificar reglas</button><button class="btn chico" data-rd-reglas="">Cancelar</button></div>` : `
+      <div class="acciones">
+        ${s.estado !== "descartado" && s.estado !== "no_sirve" ? `<button class="btn chico principal" data-rd-preparar="${esc(s.nombre)}" ${ocupado || pausa ? "disabled" : ""}>Preparar post</button>` : ""}
+        <button class="btn chico" data-rd-reglas="${esc(s.nombre)}">Pegar reglas</button>
+        <a class="btn chico" href="https://www.reddit.com/r/${esc(s.nombre)}/about/rules" target="_blank" rel="noopener">Ver reglas</a>
+        ${s.estado === "descartado" ? `<button class="btn chico" data-rd-sub="candidato">Recuperar</button>` : `<button class="btn chico" data-rd-sub="${s.estado === "sirve" ? "candidato" : "sirve"}">${s.estado === "sirve" ? "Quitar de los que sirven" : "Marcar que sirve"}</button><button class="btn chico" data-rd-sub="descartado">Descartar</button>`}
+      </div>`}
+    </article>`;
+  };
+  const activos = subs.filter((s) => s.estado !== "descartado"), descart = subs.filter((s) => s.estado === "descartado");
+  const reglasPrevias = $("#rd-reglas")?.value ?? ""; // no perder lo pegado si el panel se refresca
+  $("#rd-subs").innerHTML = (trab.startsWith("Buscar subreddits") || trab.startsWith("Clasificar reglas") ? `<div class="vacio"><b>${esc(trab)}…</b>Tarda uno o dos minutos.</div>` : "")
+    + (activos.length ? [["nsfw", "NSFW + Patreon"], ["sfw", "SFW + descubrimiento"], [undefined, "Otros"]].map(([seg, tit]) => { const g = activos.filter((s) => s.segmento === seg || (seg === undefined && !["nsfw", "sfw"].includes(s.segmento))); return g.length ? `<h3 class="rd-grupo">${tit}</h3><div class="inter-grilla">${g.map(tarjetaSub).join("")}</div>` : ""; }).join("") : `<div class="vacio"><b>Todavía no hay subreddits</b>Escribí un tema y tocá <b style="display:inline">Buscar subreddits</b>, o agregá uno que ya conozcas.</div>`)
+    + (descart.length ? `<details class="concursos"><summary>Descartados (${descart.length})</summary><div class="inter-grilla" style="padding:0 12px 12px">${descart.map(tarjetaSub).join("")}</div></details>` : "");
+  const posts = R.posts;
+  $("#rd-posts-n").textContent = `${posts.filter((p) => p.estado === "preparado").length} por publicar · ${posts.filter((p) => p.estado === "publicado").length} publicados`;
+  // Los ya publicados van plegados en "Ya publicados", del más reciente al más viejo.
+  const porPublicar = posts.filter((p) => p.estado !== "publicado");
+  const publicados = posts.filter((p) => p.estado === "publicado").sort((a, b) => (b.publicado ?? "").localeCompare(a.publicado ?? ""));
+  const submit = (p) => `https://www.reddit.com/r/${encodeURIComponent(p.subreddit)}/submit?type=IMAGE&title=${encodeURIComponent(p.titulo)}`;
+  const tarjetaPost = (p) => `<article class="rd-post" data-rd-post="${esc(p.id)}">
+    <img src="${p.imagen}" alt="Imagen para r/${esc(p.subreddit)}" data-full="${p.imagen}">
+    <div style="min-width:0">
+      <p class="dato-c">r/${esc(p.subreddit)} · ${esc(NOMBRE_PJ(p.personaje))}${p.pack ? ` · ${esc(p.pack)}` : ""}${p.nsfw ? " · marcar NSFW" : ""}${p.flair ? ` · flair: ${esc(p.flair)}` : ""}${p.estado === "publicado" ? " · <b>publicado</b>" : ""}</p>
+      <p class="tit">${esc(p.titulo)}</p>
+      ${p.comentario_inicial ? `<p class="dato-c">Comentario tuyo después de publicar: “${esc(p.comentario_inicial)}”</p>` : ""}
+      ${p.notas ? `<p class="dato-c">${esc(p.notas)}</p>` : ""}
+      <div class="acciones">
+        <button class="btn chico" data-rd-copiar="${esc(p.titulo)}">Copiar título</button>
+        <a class="btn chico" href="${p.imagen}" download="post-${esc(p.id)}.jpg">Descargar imagen</a>
+        <a class="btn chico ${p.estado === "publicado" ? "acento-linea" : "principal"}" href="${esc(submit(p))}" target="_blank" rel="noopener" title="Abre la página de publicar de r/${esc(p.subreddit)} con el título cargado">Publicar</a>
+        ${p.comentario_inicial ? `<button class="btn chico" data-rd-copiar="${esc(p.comentario_inicial)}">Copiar comentario</button>` : ""}
+        ${p.estado === "preparado" ? `<button class="btn chico" data-rd-post-estado="publicado">Marcar publicado</button><button class="btn chico" data-rd-post-estado="descartado">Descartar</button>` : `<button class="btn chico" data-rd-post-estado="preparado">Deshacer</button>`}
+      </div>
+    </div></article>`;
+  $("#rd-posts").innerHTML = (trab.startsWith("Preparar post") ? `<div class="vacio"><b>${esc(trab)}…</b>Elijo la imagen y escribo el título.</div>` : "")
+    + (porPublicar.length ? `<div class="inter-grilla">${porPublicar.map(tarjetaPost).join("")}</div>` : `<div class="vacio"><b>No hay posts por publicar</b>Tocá <b style="display:inline">Preparar post</b> en un subreddit que sirva.</div>`)
+    + (publicados.length ? `<details class="concursos" style="margin-top:14px"><summary>Ya publicados (${publicados.length})</summary><div class="inter-grilla" style="padding:0 12px 12px">${publicados.map(tarjetaPost).join("")}</div></details>` : "");
+  $("#rd-coms").innerHTML = (trab.startsWith("Comentario sugerido") ? `<div class="vacio"><b>Escribiendo comentarios…</b></div>` : "")
+    + R.comentarios.slice(0, 5).map((c) => `<div class="rd-com"><p class="dato-c">${esc(c.post.slice(0, 160))}</p>${c.opciones.map((o) => `<div class="op"><span>${esc(o)}</span><button class="btn chico" data-rd-copiar="${esc(o)}">Copiar</button></div>`).join("")}</div>`).join("");
+}
+function pintarConcursos(C) {
+  $("#sec-conc").hidden = false;
+  $("#px-concursos").disabled = !!ocup("pixiv-chrome");
+  const lista = C?.concursos ?? [];
+  const sirven = lista.filter((k) => k.sirve), otros = lista.filter((k) => !k.sirve);
+  const cuando = (iso) => iso ? new Date(iso).toLocaleString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }) : null;
+  $("#conc-n").textContent = C?.actualizado ? `${sirven.length} nos sirve${sirven.length === 1 ? "" : "n"} · revisado ${cuando(C.actualizado)}` : "";
+  const SI = { si: "sí", no: "no", no_dice: "no lo dice" };
+  if (ocup("pixiv-chrome")?.tipo?.startsWith("Actualizar concursos")) { $("#conc").innerHTML = `<div class="vacio"><b>Leyendo las bases de los concursos…</b>Tarda unos minutos.</div>`; return; }
+  if (!C?.actualizado) { $("#conc").innerHTML = `<div class="vacio"><b>Todavía no se revisaron los concursos</b>Tocá <b style="display:inline">Actualizar concursos</b>.</div>`; return; }
+  const tarjeta = (k) => `<article class="conc">
+    <h3>${esc(k.titulo)}</h3>
+    ${k.tema ? `<p>${esc(k.tema)}</p>` : ""}
+    <div class="dato-c">${k.cierre ? `Cierra ${fechaPx(k.cierre)}` : "Sin fecha de cierre"}${k.etiqueta ? ` · etiqueta <b class="mono">${esc(k.etiqueta)}</b>` : ""}</div>
+    ${k.condiciones ? `<p class="dato-c">${esc(k.condiciones)}</p>` : ""}
+    <div class="acciones"><a class="btn chico principal" href="${esc(k.link)}" target="_blank" rel="noopener">Ver concurso</a>${k.etiqueta ? `<button class="btn chico" data-conc-copiar="${esc(k.etiqueta)}">Copiar etiqueta</button>` : ""}</div>
+  </article>`;
+  $("#conc").innerHTML = `${sirven.length ? `<div class="inter-grilla">${sirven.map(tarjeta).join("")}</div>` : `<div class="vacio"><b>Ahora no hay concursos que acepten IA y fanart</b>Se revisan solos al abrir el panel (cada 12 horas) o con el botón.</div>`}
+    ${otros.length ? `<details class="concursos"><summary>No nos sirven (${otros.length})</summary><div class="conc-no">${otros.map((k) => `<div><a href="${esc(k.link)}" target="_blank" rel="noopener">${esc(k.titulo)}</a><br><span class="dato-c">IA: ${SI[k.acepta_ia] ?? "?"} · fanart: ${SI[k.acepta_fanart] ?? "?"}${k.cierre ? ` · cierra ${fechaPx(k.cierre)}` : ""}${k.condiciones ? `. ${esc(k.condiciones)}` : ""}</span></div>`).join("")}</div></details>` : ""}`;
+}
+function pintarInteraccion(I) {
+  $("#sec-inter").hidden = false;
+  $("#px-sugerencias").disabled = !!ocup("pixiv-chrome");
+  const hoyAR = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires" }).format(new Date());
+  if (!I) { $("#inter-n").textContent = ""; $("#inter").innerHTML = `<div class="vacio"><b>Todavía no hay sugerencias</b>Tocá <b style="display:inline">Buscar sugerencias</b>: tarda unos minutos.</div>`; return; }
+  const obras = I.obras;
+  const pendientes = obras.filter((o) => o.estado === "pendiente");
+  $("#inter-n").textContent = `${pendientes.length} por revisar · ${obras.filter((o) => o.estado === "hecho").length} hechas`;
+  const tarjeta = (o) => `<article class="obra ${o.estado}" data-obra="${esc(o.id)}">
+    <img src="${o.mini}" alt="${esc(o.titulo)}" data-full="${o.mini}" loading="lazy"><div class="obra-cuerpo">
+    <div><h3>${esc(o.titulo || "Sin título")}</h3><div class="autor"><a href="${esc(o.perfil)}" target="_blank" rel="noopener" title="Abrir el perfil del artista">${esc(o.autor)}</a> · ${esc(NOMBRE_PJ(o.personaje))}${o.fecha_obra ? ` · ${fechaPx(o.fecha_obra)}` : ""}${o.origen === "general" ? ` · <span title="Salió de la búsqueda por personaje: puede no ser IA">búsqueda general</span>` : ""}</div>
+    ${o.estado !== "pendiente" ? `<span class="etq est ${o.estado === "hecho" ? "ok" : "neutro"}">${o.estado === "hecho" ? "Hecho" : "Saltada"}</span>` : o.saltar ? `<span class="etq est aviso">Mejor saltarla</span>` : ""}</div>
+    ${o.estado === "pendiente" ? queHacer(o.comentario_en, o.saltar, "pixiv") : ""}
+    ${o.comentario_en && !o.saltar ? `<p class="com" lang="en">${esc(o.comentario_en)}</p>` : ""}
+    ${o.por_que ? `<p class="porque">${esc(o.por_que)}</p>` : ""}${o.nota ? `<p class="porque">${esc(o.nota)}</p>` : ""}
+    <div class="acciones">
+      <a class="btn chico principal" href="${esc(o.link)}" target="_blank" rel="noopener">Abrir obra</a>
+      ${o.comentario_en && !o.saltar ? `<button class="btn chico" data-inter-copiar="${esc(o.id)}" title="Copiar el comentario sugerido">Copiar</button>` : ""}
+      <span class="par">${o.estado === "pendiente" ? `<button class="btn chico" data-inter="hecho">Hecho</button><button class="btn chico" data-inter="saltado">Saltar</button>` : `<button class="btn chico" data-inter="pendiente">Deshacer</button>`}</span>
+    </div></div></article>`;
+  const hora = (iso) => new Date(iso).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  const proxima = I.ultimo_intento ? new Date(Date.parse(I.ultimo_intento) + 2 * 3600e3) : null;
+  const vacio = ocup("pixiv-chrome")?.tipo?.startsWith("Buscar sugerencias") ? `<div class="vacio"><b>Buscando obras nuevas…</b>Tarda unos minutos.</div>`
+    : `<div class="vacio"><b>Revisaste todas las sugerencias</b>${I.nuevas === 0 ? `En la última búsqueda (${hora(I.generado)}) no había obras nuevas del último mes. ` : ""}${proxima && proxima > new Date() ? `Vuelvo a buscar solo cuando abras el panel después de las ${hora(proxima)}, o tocá Buscar sugerencias.` : "Busco nuevas al abrir el panel, o tocá Buscar sugerencias."}</div>`;
+  $("#inter").innerHTML = `${pendientes.length ? `<div class="inter-grilla h">${[...pendientes].sort((a, b) => a.saltar - b.saltar).map(tarjeta).join("")}</div>` : vacio}`;
+}
+// Sugerencias de interacción: si ya revisaste todas (o no hay), busca nuevas sola al abrir el panel (el servidor
+// frena si hubo un intento en las últimas 2 horas).
+let autoSugerencias = false;
+let autoMetPx = false;
+function pedirSugerenciasSolo() {
+  const I = datos.pixiv?.interaccion;
+  if (autoSugerencias || ocup("pixiv-chrome") || !datos.pixiv) return;
+  const act = datos.pixiv.metricas?.actualizado;
+  if (!autoMetPx && datos.pixiv.kpis.publicados && (!act || Date.now() - Date.parse(act) > 6 * 3600e3)) {
+    autoMetPx = true;
+    api("pixiv_metricas", { auto: true }).then((r) => { if (!r.omitido) cargar(true); }).catch(() => {});
+    return;
+  }
+  const quedan = I ? I.obras.filter((o) => o.estado === "pendiente" && !o.saltar).length : 0;
+  if (quedan) {
+    // con las sugerencias al día, se fija si toca revisar los concursos (el servidor frena si fue hace menos de 12 h)
+    const C = datos.pixiv.concursos;
+    if (!C?.intento || Date.now() - Date.parse(C.intento) > 12 * 3600e3) {
+      autoSugerencias = true;
+      api("pixiv_concursos", { auto: true }).then((r) => { if (!r.omitido) { aviso("Revisando los concursos de Pixiv."); cargar(true); } }).catch(() => {});
+    }
+    return;
+  }
+  autoSugerencias = true;
+  api("pixiv_sugerencias", { auto: true }).then((r) => { if (!r.omitido) { aviso("Buscando sugerencias nuevas para Pixiv."); cargar(true); } }).catch(() => {});
+}
+// Sorteos: el panel solo lee quién participó y sortea. El anuncio sale en un lote aprobado y al
+// ganador le escribís vos. En X cada revisión cuesta (API paga): primero se calcula y se confirma el costo.
+const SO_COND = { comento: "Comentó", like: "Dio like", repost: "Reposteó", favorito: "Guardó en favoritos", sigue: "Te sigue" };
+const SO_CONDS = { bsky: ["comento", "like", "repost", "sigue"], pixiv: ["comento", "favorito", "sigue"], x: ["comento", "like", "repost", "sigue"] };
+const SO_NOTA = {
+  bsky: "Gratis. Se puede pedir que hayan comentado, dado like, reposteado y que te sigan, y descartar cuentas recién creadas.",
+  pixiv: "Gratis, con la sesión del Chrome de Pixiv (solo lectura). Se puede pedir comentario, favoritos y que te sigan. Los likes de Pixiv son anónimos: no sirven como condición. Solo cuentan los favoritos públicos.",
+  x: "Usa la API de X, que es paga por uso. Antes de revisar, el panel calcula el costo y te pide confirmarlo (suele ser de 1 a 8 USD). X solo deja leer las respuestas de los últimos 7 días: revisá antes de que pase una semana.",
+};
+let soFormAbierto = false;
+function pintarSorteos() {
+  const S = datos.sorteos ?? { lista: [], x: {} };
+  const ocupado = !!ocup("sorteos");
+  const lista = S.lista.filter((s) => s.red === red);
+  $("#so-n").textContent = lista.length ? `${lista.filter((s) => !s.resultado).length} abierto(s) · ${lista.filter((s) => s.resultado).length} sorteado(s)` : "";
+  $("#so-nota").textContent = SO_NOTA[red];
+  $("#so-nuevo").textContent = soFormAbierto ? "Cancelar" : "Nuevo sorteo";
+  $("#so-x").innerHTML = red !== "x" ? "" : S.x.cuenta ? `<p class="dato-c" style="margin:0 0 10px">API de X conectada como <b>@${esc(S.x.cuenta)}</b>.</p>`
+    : S.x.credenciales ? `<div class="vacio" style="margin:0 0 12px"><b>Falta conectar X</b>Tocá Conectar X: se abre el navegador para que autorices la app con {{X}} (solo lectura).<br><button class="btn chico principal" id="so-conectar" style="margin-top:8px" ${ocupado ? "disabled" : ""}>Conectar X</button></div>`
+    : `<p class="linea-vacia" style="margin:0 0 10px"><b>La API de X todavía no está configurada.</b> Para sortear en X hace falta una cuenta de desarrollador con saldo (la creás y la cargás vos). Los pasos están en docs/sorteos.md. Bluesky y Pixiv funcionan sin esto.</p>`;
+  const hoyLocal = new Date(Date.now() - new Date().getTimezoneOffset() * 60e3).toISOString().slice(0, 16);
+  const ejemplo = red === "x" ? "https://x.com/{{X_USUARIO}}/status/…" : red === "bsky" ? "https://bsky.app/profile/{{BSKY}}/post/…" : "https://www.pixiv.net/en/artworks/…";
+  // el formulario abierto no se vuelve a dibujar con la recarga automática (se perdería lo escrito)
+  if (!soFormAbierto) $("#so-form-cont").innerHTML = "";
+  else if (!$("#so-form")) $("#so-form-cont").innerHTML = `<form class="so-form" id="so-form">
+    <div class="fila"><label class="campo">Nombre del sorteo<input type="text" name="titulo" required maxlength="80" placeholder="p. ej. Sorteo 1 mes de Patreon"></label>
+    <label class="campo">Link del post del sorteo (vacío: sorteo entre todos tus seguidores)<input type="url" name="post" placeholder="${ejemplo}"></label></div>
+    <fieldset><legend>Para participar tiene que haber…</legend>${SO_CONDS[red].map((c) => `<label class="chk"><input type="checkbox" name="cond" value="${c}" ${c !== "repost" ? "checked" : ""}>${SO_COND[c]}</label>`).join("")}</fieldset>
+    <div class="fila">
+      <label class="campo" style="flex:0 1 120px">Ganadores<input type="number" name="ganadores" min="1" max="20" value="1"></label>
+      <label class="campo" style="flex:0 1 120px">Suplentes<input type="number" name="suplentes" min="0" max="10" value="2"></label>
+      ${red !== "pixiv" ? `<label class="campo" style="flex:0 1 200px">Cuenta con al menos (días)<input type="number" name="dias" min="0" max="3650" value="30"></label>` : ""}
+      <label class="campo" style="flex:0 1 220px">Cierre (opcional)<input type="datetime-local" name="cierre" min="${hoyLocal}"></label>
+    </div>
+    <div><button class="btn principal" type="submit" ${ocupado ? "disabled" : ""}>Crear sorteo</button></div>
+  </form>`;
+  const corriendo = (s) => ocup("sorteos")?.tipo?.includes(`(${s.titulo})`);
+  const cuando = (iso) => new Date(iso).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  const persona = (s, id) => { const p = s.participantes.find((x) => x.id === id); return p ? `<a href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.nombre)}</a> <span class="dato-c">@${esc(p.handle)}</span>` : esc(id); };
+  const tarjeta = (s) => {
+    const ps = s.participantes ?? [], aptos = ps.filter((p) => p.apto);
+    const est = s.resultado ? ["ok", "Sorteado"] : s.revisado ? ["neutro", "Revisado"] : ["aviso", "Sin revisar"];
+    const e = s.estimacion, vigente = e && Date.now() - Date.parse(e.fecha) < 6 * 3600e3;
+    let acciones = "";
+    if (!s.resultado) {
+      if (s.red === "x") acciones += vigente
+        ? `<button class="btn chico ${s.revisado ? "" : "principal"}" data-so-revisar="${esc(s.id)}" data-costo="${e.costo_usd}" ${ocupado ? "disabled" : ""}>Revisar participantes (≈ ${e.costo_usd} USD)</button><button class="btn chico" data-so-estimar="${esc(s.id)}" ${ocupado ? "disabled" : ""}>Recalcular costo</button>`
+        : `<button class="btn chico principal" data-so-estimar="${esc(s.id)}" ${ocupado || !S.x.cuenta ? "disabled" : ""}>Calcular costo</button>`;
+      else acciones += `<button class="btn chico ${s.revisado ? "" : "principal"}" data-so-revisar="${esc(s.id)}" ${ocupado ? "disabled" : ""}>${s.revisado ? "Volver a revisar" : "Revisar participantes"}</button>`;
+      if (s.red !== "x" || vigente) acciones += `<button class="btn chico" data-so-finalizar="${esc(s.id)}" ${s.red === "x" ? `data-costo="${e.costo_usd}"` : ""} ${ocupado ? "disabled" : ""}>Finalizar ahora</button>`;
+      if (s.revisado && aptos.length) acciones += `<button class="btn chico principal" data-so-sortear="${esc(s.id)}" ${ocupado ? "disabled" : ""}>Sortear</button>`;
+    }
+    if (s.revisado) acciones += `<a class="btn chico" href="/sorteo/${esc(s.id)}.md" target="_blank" rel="noopener">Ver registro</a>`;
+    if (s.post) acciones += `<a class="btn chico" href="${esc(s.post)}" target="_blank" rel="noopener">Abrir post</a>`;
+    if (!s.resultado) acciones += `<button class="btn chico" data-so-anular="${esc(s.id)}" ${ocupado ? "disabled" : ""}>Anular</button>`;
+    return `<article class="conc">
+      <h3>${esc(s.titulo)}</h3>
+      <div><span class="etq est ${est[0]}">${est[1]}</span></div>
+      <p class="dato-c">${s.post ? "Condiciones: " + s.condiciones.map((c) => SO_COND[c].toLowerCase()).join(", ") : "Entre todos tus seguidores"}${s.cuenta_min_dias ? ` · cuentas de ${s.cuenta_min_dias}+ días` : ""} · ${s.ganadores} ganador${s.ganadores > 1 ? "es" : ""}${s.suplentes ? `, ${s.suplentes} suplente${s.suplentes > 1 ? "s" : ""}` : ""}${s.cierre ? ` · cierra ${cuando(s.cierre)}` : ""}</p>
+      ${corriendo(s) ? `<p><b>Trabajando…</b> mirá el detalle en Último trabajo.</p>` : ""}
+      ${s.red === "x" && e && !s.resultado ? `<p class="dato-c">Costo calculado ${cuando(e.fecha)}: ${e.likes ?? "-"} likes, ${e.reposts ?? "-"} reposts, ${e.respuestas ?? "-"} respuestas, ${e.seguidores} seguidores.${vigente ? "" : " Venció (más de 6 h): recalculalo."}</p>${e.aviso ? `<p class="porque">${esc(e.aviso)}</p>` : ""}` : ""}
+      ${s.revisado ? `<p class="dato-c">Revisado ${cuando(s.revisado)}: ${ps.length} participante${ps.length === 1 ? "" : "s"}, <b>${aptos.length} cumple${aptos.length === 1 ? "" : "n"}</b>${s.costo_real_usd != null ? ` · costo aprox. ${s.costo_real_usd} USD` : ""}.</p>` : ""}
+      ${s.resultado ? `<p style="margin-top:4px"><b>Ganador${s.resultado.ganadores.length > 1 ? "es" : ""}</b></p><ol class="so-gan">${s.resultado.ganadores.map((g) => `<li>${persona(s, g)}</li>`).join("")}</ol>
+        ${s.resultado.suplentes.length ? `<p class="dato-c">Suplentes, en orden, si el ganador no responde:</p><ol class="so-gan">${s.resultado.suplentes.map((g) => `<li>${persona(s, g)}</li>`).join("")}</ol>` : ""}
+        <p class="dato-c">Sorteado ${cuando(s.resultado.fecha)} entre ${s.resultado.aptos}. Semilla <span class="mono">${esc(s.resultado.semilla)}</span> (con ella se puede comprobar el resultado). Al ganador le escribís vos, desde la cuenta.</p>` : ""}
+      ${ps.length ? `<details><summary class="dato-c" style="cursor:pointer">Participantes (${ps.length})</summary><div class="so-tabla-cont"><table class="so-tabla"><thead><tr><th>Cuenta</th><th>Cumple</th><th>Motivo</th></tr></thead><tbody>${ps.map((p) => `<tr><td><a href="${esc(p.link)}" target="_blank" rel="noopener">@${esc(p.handle)}</a></td><td>${p.apto ? "Sí" : "No"}</td><td>${esc(p.motivo ?? "")}</td></tr>`).join("")}</tbody></table></div></details>` : ""}
+      <div class="acciones">${acciones}</div>
+    </article>`;
+  };
+  $("#so-lista").innerHTML = lista.length ? `<div class="inter-grilla">${lista.map(tarjeta).join("")}</div>` : soFormAbierto ? "" : `<p class="linea-vacia"><b>Todavía no hay sorteos en esta red.</b> Tocá Nuevo sorteo. Primero publicá el post del sorteo (en un lote aprobado) y pegá su link.</p>`;
+}
+function pintar() {
+  pintarBase();
+  pintarHoy();
+  pintarTodoHecho();
+  pintarJob();
+  // El lote va arriba cuando espera tu aprobación; si no, después de la interacción del día.
+  const esperando = red === "pixiv" ? datos.pixiv?.kpis.sin_aprobar : ["x", "bsky"].includes(red) && datos.kpis?.sin_aprobar;
+  const ancla = esperando ? $("#sec-seg") : $("#sec-conc");
+  if (ancla.nextElementSibling !== $("#lotes")) ancla.after($("#lotes"));
+  $("#sec-reddit").classList.toggle("pausado", !!datos.reddit?.plan?.pausa);
+  if (!$("#xr-ayuda").dataset.listo) { try { $("#xr-ayuda").open = localStorage.getItem("pleg:xr-ayuda") === "1"; } catch {} $("#xr-ayuda").dataset.listo = "1"; }
+  requestAnimationFrame(() => { pintarIndice(); aplicarPlegables(); });
+}
+function pintarBase() {
+  const d = datos;
+  $("#sec-sorteo").hidden = !["x", "bsky", "pixiv"].includes(red);
+  if (!$("#sec-sorteo").hidden) pintarSorteos();
+  $("#sec-inter").hidden = true;
+  $("#sec-conc").hidden = true;
+  $("#sec-bs").hidden = red !== "bsky";
+  $("#sec-xr").hidden = red !== "x";
+  $("#sec-xt").hidden = red !== "x";
+  if (red === "bsky") pintarBsky(datos.bsky_inter);
+  if (red === "x") { pintarXr(datos.x_respuestas); pintarXt(datos.x_traducciones); }
+  pedirBskySolo();
+  const esReddit = red === "reddit", esR34 = red === "rule34";
+  for (const id of ["#sec-seg", "#sec-rend", "#sec-pubs", "#lotes"]) $(id).hidden = esReddit || esR34;
+  $("#sec-reddit").hidden = !esReddit;
+  $("#sec-r34").hidden = !esR34;
+  $("#auto").setAttribute("aria-checked", d.automatizacion.activa);
+  $("#auto span").textContent = d.automatizacion.activa ? "Automatización activa" : "Automatización en pausa";
+  pintarRedes();
+  if (esReddit) return pintarReddit();
+  if (esR34) return pintarR34();
+  pedirSugerenciasSolo();
+  if (red === "pixiv") return pintarPixiv();
+  $("#generar").textContent = "Generar lote";
+  $("#programar").hidden = false;
+  $("#metricas").hidden = false;
+  $("#metricas").title = "";
+  const R = RED(), nombreRed = R.nombre;
+  const k = { ...d.kpis, ...PR().kpis };
+  const nota = $("#nota-red");
+  nota.hidden = d.redes.length < 2;
+  // Desde 2026-11-23 X y Bluesky tienen lotes y horarios propios (los lotes de antes salían en las dos).
+  nota.textContent = `Acá ves solo los lotes de ${nombreRed}: cada red tiene sus propios posts y horarios. Los lotes viejos, que salían en las dos redes, aparecen en ambas pestañas.`;
+  $("#k-publicados").textContent = k.publicados;
+  $("#k-publicados-txt").textContent = `publicados en ${nombreRed}`;
+  $("#k-salir").textContent = k.por_salir;
+  $("#k-salir-txt").textContent = k.por_salir ? `aprobados por salir (${k.programados} en Buffer${k.en_espera ? `, ${k.en_espera} entran cuando haya lugar` : ""})` : "aprobados por salir";
+  $("#k-cubierto").textContent = k.cubierto_hasta ? new Date(`${k.cubierto_hasta}T12:00:00`).toLocaleDateString("es-AR", { day: "numeric", month: "short" }) : "sin posts";
+  const imgs = d.carpetas.lote + d.carpetas.backlog;
+  $("#k-imagenes").textContent = d.carpetas.backlog;
+  $("#k-imagenes-txt").textContent = `imágenes sin usar en el Backlog${d.carpetas.lote ? ` (y ${d.carpetas.lote} en carpetas Lote)` : ""}${imgs >= 10 ? `: alcanzan para ${Math.floor(imgs / 10)} lote(s)` : ""}`;
+  $("#k-proximo-cuando").textContent = k.proximo ? `próximo post: ${fechaAR(k.proximo.fecha, k.proximo.hora)} (ARG)` : "próximo post";
+  $("#k-proximo").textContent = k.proximo ? k.proximo.texto.replace("{PATREON}", "🔗") : "Nada programado todavía.";
+  const ult = $("#ultimo"); ult.hidden = !k.ultimo_link; if (k.ultimo_link) ult.href = k.ultimo_link;
+  ult.textContent = `Ver el último post en ${nombreRed}`;
+  $("#programar").textContent = `Programar en ${d.redes.map((r) => r.nombre).join(" y ")}`;
+  const alertas = [];
+  if (k.sin_aprobar) alertas.push(["aviso", k.sin_aprobar === 1 ? "Hay un lote esperando tu aprobación." : `Hay ${k.sin_aprobar} lotes esperando tu aprobación.`]);
+  if (k.franjas_vacias?.length) alertas.push(["error", `Hay ${k.franjas_vacias.length} franja(s) de hoy o mañana sin post aprobado (${k.franjas_vacias.map((x) => fechaAR(x.fecha, x.hora)).join(", ")}, hora argentina). ${k.sin_aprobar ? "Aprobá el lote que está esperando y tocá Programar." : "Generá un lote nuevo."}`]);
+  if (k.repetidos?.length) alertas.push(["error", `Hay posts seguidos con el mismo personaje (${k.repetidos.map((x) => fechaAR(x.fecha, x.hora)).join(", ")}). Cambiá el orden o sumá imágenes de otro personaje.`]);
+  if (k.con_problema) alertas.push(["error", `${k.con_problema} post(s) no se pudieron programar en ${nombreRed}: mirá el motivo en cada tarjeta. Se reintentan solos en la próxima corrida (o con Programar).`]);
+  if (k.en_espera_pronto?.length) alertas.push(["error", `${k.en_espera_pronto.length} post(s) de las próximas 24 horas todavía no están en Buffer (${k.en_espera_pronto.map((x) => fechaAR(x.fecha, x.hora)).join(", ")}, hora argentina). Tocá "Programar en X y Bluesky": hace lugar en la cola y los sube.`]);
+  if (d.automatizacion.activa && d.automatizacion.tarea !== "Ready" && d.automatizacion.tarea !== "Running") alertas.push(["error", "La automatización está activa pero la tarea diaria no corre: apagala y prendela de nuevo."]);
+  if (d.carpetas.lote && !ocup("lotes")) alertas.push(["aviso", `Hay ${d.carpetas.lote} imágenes en carpetas Lote sin armar: se arman en la próxima corrida diaria, o tocá Generar lote.`]);
+  if (k.por_salir <= 3 && !k.sin_aprobar && !imgs) alertas.push(["error", `Quedan ${k.por_salir} post(s) por salir y no hay imágenes sin usar en el Backlog: sumá imágenes para armar el próximo lote.`]);
+  else if (imgs && imgs < 10) alertas.push(["aviso", `En el Backlog quedan ${imgs} imágenes sin usar: alcanza para menos de un lote. Conviene sumar más.`]);
+  pintarAlertas(alertas);
+  $("#detener").hidden = !d.trabajo;
+  pintarRend(PR().rendimiento, d.midiendo);
+  pintarPublicados(PR().publicados ?? [], nombreRed);
+  $("#metricas").disabled = $("#generar").disabled = $("#programar").disabled = !!ocup("lotes");
+  $("#trabajo-tit").textContent = d.trabajos?.length > 1 ? `En curso: ${d.trabajos.length} trabajos (detalle del más reciente: ${d.trabajo.tipo})` : d.trabajo ? `En curso: ${d.trabajo.tipo}…` : "Último trabajo";
+  $("#log").textContent = d.log || "Todavía no se corrió ningún trabajo.";
+
+  const cont = $("#lotes");
+  // Cada red muestra solo sus lotes (2026-11-23: X y Bluesky dejan de ser espejo; los lotes de antes salen en las dos).
+  const lotesRed = d.lotes.filter((x) => (x.redes ?? ["x", "bsky"]).includes(RED().clave));
+  if (!lotesRed.length) {
+    cont.innerHTML = `<div class="vacio"><b>Todavía no hay lotes</b>Dejá hasta 10 imágenes en una carpeta <span class="mono">Lote…</span> dentro de <span class="mono">Publicaciones</span> (las de repuesto, en <span class="mono">Backlog</span>) y tocá <b style="display:inline">Generar lote</b>.</div>`;
+    return;
+  }
+  if (!loteSel || !lotesRed.some((l) => l.lote === loteSel)) loteSel = lotesRed[0].lote;
+  const l = lotesRed.find((x) => x.lote === loteSel);
+  const pub = l.piezas.filter((p) => !p.bloqueada);
+  const conProb = pub.filter((p) => p.problemas.length).length;
+  const esBacklog = l.tipo === "backlog";
+  const programados = !esBacklog && l.piezas.some((p) => d.redes.some((r) => ["PROGRAMADO", "PUBLICADO"].includes(p[r.clave]?.estado)));
+  const usados = esBacklog ? pub.filter((p) => p.fecha).length : 0;
+  const estadoLote = !l.revisado ? ["error", "Sin revisión"] : l.aprobado?.vigente ? ["ok", esBacklog ? "Backlog aprobado" : "Aprobado"] : l.aprobado ? ["aviso", "Cambió después de aprobarlo"] : ["aviso", "Esperando tu aprobación"];
+  cont.innerHTML = `
+  <section class="lote" aria-labelledby="tit-lote">
+    <div class="barra">
+      <h2 id="tit-lote">Lote</h2>
+      <select id="sel-lote" aria-label="Elegir lote">${lotesRed.map((x) => `<option value="${esc(x.lote)}" ${x.lote === loteSel ? "selected" : ""}>${x.tipo === "backlog" ? "Backlog " + esc(x.lote.replace(/^backlog-/, "")) : "Lote " + esc(x.lote) + (x.redes?.length === 1 ? (x.redes[0] === "x" ? " · solo X" : " · solo Bluesky") : "")}</option>`).join("")}</select>
+      <span class="etq ${estadoLote[0]}">${estadoLote[1]}</span>
+      <span class="etq">${esBacklog ? `${pub.length - usados} en reserva, ${usados} usado${usados === 1 ? "" : "s"}` : `${pub.length} para publicar`}</span>
+      ${l.piezas.length - pub.length ? `<span class="etq error">${l.piezas.length - pub.length} bloqueadas</span>` : ""}
+      ${conProb ? `<span class="etq error">${conProb} con problemas</span>` : ""}
+      <div class="der">
+        ${programados ? `<small style="color:var(--suave)">Ya hay posts en Buffer: el lote no se edita.</small>`
+          : l.aprobado?.vigente ? `<button class="btn" id="desaprobar">Anular aprobación</button>`
+          : `<button class="btn" id="revisar">Revisar de nuevo</button><button class="btn principal" id="aprobar" ${conProb || !l.revisado || !pub.length ? "disabled" : ""}>Aprobar lote</button>`}
+      </div>
+    </div>
+    ${l.seguidos?.length ? `<p class="nota" style="color:var(--error)">Este lote repite personaje en posts seguidos (${l.seguidos.map((x) => fechaAR(x.fecha, x.hora)).join(", ")}): no alcanza para alternar. Sumá imágenes de otro personaje o bloqueá alguna.</p>` : ""}
+    ${l.sin_personaje ? `<p class="nota">${l.sin_personaje} post(s) sin personaje: completalo en la tarjeta para que no se repita dos días seguidos.</p>` : ""}
+    ${l.contexto ? `<p class="nota">Contexto del lote: ${esc(l.contexto)}</p>` : ""}
+    ${esBacklog ? `<p class="nota">Se aprueba una sola vez. Cada día sin post programado sale uno de estos, en orden.</p>` : ""}
+    ${(() => { const R = RED(), orden = porFecha(l.piezas).map((p, i) => ({ p, o: i + 1 })); const ya = orden.filter((x) => x.p[R.clave]?.estado === "PUBLICADO"), resto = orden.filter((x) => x.p[R.clave]?.estado !== "PUBLICADO");
+      return (resto.length ? `<div class="grilla">${resto.map((x) => tarjeta(l, x.p, esBacklog ? !!x.p.fecha : programados, x.o)).join("")}</div>` : `<p class="linea-vacia" style="margin-top:16px">Ya salieron todos los posts de este lote.</p>`) + (ya.length ? `<details class="concursos lote-pub"><summary>Ya publicados en ${esc(R.nombre)} (${ya.length})</summary><div class="pub-lista" style="border:0;border-top:1px solid var(--borde);border-radius:0">${ya.map((x) => filaPublicada(x.p, x.p[R.clave], x.p.img, String(x.p.texto ?? "").replace("{PATREON}", "🔗"), fechaAR(x.p.fecha, x.p.hora, x.p.zona ?? ZONA_PUB), R.nombre, x.p.texto ? x.p.n : null)).join("")}</div></details>` : ""); })()}
+  </section>`;
+}
+
+// ---------- Publicados (seguimiento) ----------
+const horaAR = (iso, f, h) => iso ? new Date(iso).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }) + " (ARG)" : `${f ?? ""} ${h ?? ""}`;
+function pintarPublicados(lista, nombreRed) {
+  $("#pubs-n").textContent = lista.length ? `${lista.length} en ${nombreRed}` : "";
+  if (!lista.length) { $("#pubs").innerHTML = `<div class="vacio" style="margin-top:0"><b>Todavía no se publicó nada en ${esc(nombreRed)}</b>Cada post que sale aparece acá con su link.</div>`; return; }
+  const fila = (p) => {
+    const m = p.metricas, v = m ? (m.impressions ?? m.views ?? m.reach ?? m.vistas) : null;
+    return `<div class="pub"><img src="${p.img}" alt="" loading="lazy" data-full="${p.img}"><span class="cuando mono">${esc(horaAR(p.enviado, p.fecha, p.hora))}</span><span class="pj">${esc(NOMBRE_PJ(String(p.personaje).toLowerCase()))}</span>
+      <p>${esc(String(p.texto ?? "").replace("{PATREON}", "🔗"))}${v != null ? ` <span class="met">· ${num(v)} vistas</span>` : ""}</p>
+      ${p.link ? `<a class="btn chico" href="${esc(p.link)}" target="_blank" rel="noopener">Ver</a>` : "<span></span>"}</div>`;
+  };
+  const primeros = lista.slice(0, 8), resto = lista.slice(8);
+  $("#pubs").innerHTML = `<div class="pub-lista">${primeros.map(fila).join("")}${resto.length ? `<details><summary>Ver ${resto.length} más</summary>${resto.map(fila).join("")}</details>` : ""}</div>`;
+}
+
+// ---------- Alertas que se cierran a mano ----------
+// La "X" oculta esa alerta tal cual está escrita. Si la situación cambia (otra cantidad, otras fechas), el texto cambia y
+// vuelve a aparecer. Se recuerda en este navegador (localStorage); las últimas 60.
+const CERRADAS_K = "alertas-cerradas";
+const cerradas = () => { try { return JSON.parse(localStorage.getItem(CERRADAS_K) ?? "[]"); } catch { return []; } };
+const claveAlerta = (m) => `${red}|${m}`;
+function pintarAlertas(alertas, antes = "") {
+  const ya = new Set(cerradas());
+  const html = alertas.filter(([, m]) => !ya.has(claveAlerta(m))).map(([c, m]) =>
+    `<div class="alerta ${c} cerrable" role="status"><span>${esc(m)}</span><button type="button" class="cerrar-alerta" data-cerrar-alerta="${esc(claveAlerta(m))}" aria-label="Cerrar este aviso" title="Cerrar">×</button></div>`).join("");
+  $("#alertas").innerHTML = antes + html;
+}
+document.addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-cerrar-alerta]");
+  if (!b) return;
+  const lista = cerradas().filter((x) => x !== b.dataset.cerrarAlerta);
+  lista.push(b.dataset.cerrarAlerta);
+  try { localStorage.setItem(CERRADAS_K, JSON.stringify(lista.slice(-60))); } catch {}
+  b.closest(".alerta").remove();
+});
+
+// ---------- Pixiv ----------
+let lotePx = null;
+const fechaPx = (f) => f ? new Date(`${f}T12:00:00`).toLocaleDateString("es-AR", { weekday: "short", day: "numeric", month: "short" }) : "sin fecha";
+const NOMBRE_PJ = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+function estadoPx(p, aprobado, hoy) {
+  const e = p.pixiv;
+  if (e?.estado === "PUBLICADO") return ["ok", "Publicado"];
+  if (e?.estado === "SUBIENDO") return ["neutro", "Subiendo"];
+  if (["FALLIDO", "VENCIDO"].includes(e?.estado)) return ["error", e.estado === "VENCIDO" ? "Vencido" : "Falló"];
+  if (!aprobado || !p.fecha || p.bloqueada) return null;
+  if (p.manual) return ["aviso", "Pendiente: subilo vos"];
+  return p.toca ? ["neutro", "Subiendo sola"] : ["neutro", "En agenda"];
+}
+function pintarPixiv() {
+  const d = datos, P = d.pixiv, k = P.kpis;
+  const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: P.conf.zona }).format(new Date());
+  const nota = $("#nota-red");
+  nota.hidden = false;
+  nota.textContent = `Lotes propios: ${P.conf.posts_por_lote} posts de ${P.conf.por_post} imágenes del mismo personaje, del Backlog y primero los que tienen pack en Patreon. ${P.conf.horas.length === 1 ? "Un post" : `${P.conf.horas.length} posts`} por día: ${P.conf.horas_ar.join(", ")} de Argentina (${P.conf.horas.join(", ")} de Japón). ${P.conf.modo === "auto" ? "Se publica solo: a la hora de cada franja sube el post; si falla, 3 reintentos cada 15 minutos. Si un post no sale a su hora (PC apagada, falla de Pixiv), sale solo en la franja siguiente, o lo disparás ya con 'Publicar ahora'. Si se vence la sesión de Pixiv, avisa acá." : "Cada post se sube con un clic: se abre Pixiv con todo cargado y vos tocás Post."}`;
+  $("#k-publicados").textContent = k.publicados;
+  $("#k-publicados-txt").textContent = "publicados en Pixiv";
+  $("#k-salir").textContent = k.por_salir;
+  $("#k-salir-txt").textContent = "aprobados por salir";
+  $("#k-cubierto").textContent = k.cubierto_hasta ? new Date(`${k.cubierto_hasta}T12:00:00`).toLocaleDateString("es-AR", { day: "numeric", month: "short" }) : "sin posts";
+  const conPack = P.stock.filter((s) => s.patreon).reduce((a, s) => a + s.posts, 0);
+  $("#k-imagenes").textContent = conPack;
+  $("#k-imagenes-txt").textContent = `posts posibles con personajes de Patreon (unas ${Math.floor(conPack / (7 * P.conf.horas.length))} semanas)`;
+  $("#k-proximo-cuando").textContent = k.proximo ? `próximo post: ${k.proximo.ar} (ARG)` : "próximo post";
+  $("#k-proximo").textContent = k.proximo ? `${NOMBRE_PJ(k.proximo.personaje)}: ${k.proximo.titulo}` : "Nada aprobado todavía.";
+  const ult = $("#ultimo"); ult.hidden = !k.ultimo_link; if (k.ultimo_link) ult.href = k.ultimo_link; ult.textContent = "Ver el último post en Pixiv";
+  $("#generar").textContent = "Generar lote de Pixiv";
+  $("#programar").hidden = true;
+  $("#generar").disabled = !!ocup("pixiv-lotes");
+  const alertas = [];
+  if (k.franjas_vacias?.length) alertas.push(["error", `Hay ${k.franjas_vacias.length} franja(s) de Pixiv de las próximas 36 horas sin post aprobado (${k.franjas_vacias.map((x) => x.ar).join(", ")}, Argentina). ${k.sin_aprobar ? "Aprobá el lote de Pixiv que está esperando." : "Generá un lote de Pixiv."}`]);
+  if (k.sin_aprobar) alertas.push(["aviso", k.sin_aprobar === 1 ? "Hay un lote de Pixiv esperando tu aprobación." : `Hay ${k.sin_aprobar} lotes de Pixiv esperando tu aprobación.`]);
+  if (k.con_problema) alertas.push(["error", `${k.con_problema} post(s) de Pixiv fallaron: mirá el motivo en la tarjeta.`]);
+  if (k.auto && !k.auto.ok && k.auto.mensaje && !k.para_subir.length) alertas.push(["error", `Subida automática a Pixiv frenada: ${k.auto.mensaje}`]);
+  if (conPack < 7) alertas.push(["aviso", `Quedan pocas imágenes de personajes de Patreon en el Backlog (${conPack} posts). Sumá más al Backlog.`]);
+  const pend = k.para_subir.map((x) => `<div class="alerta aviso px-pend" role="status"><span><b>No salió a su hora:</b> ${esc(NOMBRE_PJ(x.personaje))}, "${esc(x.titulo)}" (${esc(x.ar)}).${x.fallido ? ` <small>${esc(x.error ?? "")}</small>` : ""}</span><button class="btn chico principal" data-px-publicar="${esc(x.lote)}|${x.n}" data-fallido="${x.fallido ? 1 : 0}" ${ocup("pixiv-chrome") && !/sugerencias|concursos|métricas/i.test(ocup("pixiv-chrome").tipo) ? `disabled title="Esperá que termine: ${esc(ocup("pixiv-chrome").tipo)}"` : ""}>Publicar ahora</button></div>`).join("");
+  pintarAlertas(alertas, pend); // "No salió a su hora" tiene su botón de acción y no se cierra: se resuelve publicando
+  $("#detener").hidden = !d.trabajo;
+  $("#trabajo-tit").textContent = d.trabajos?.length > 1 ? `En curso: ${d.trabajos.length} trabajos (detalle del más reciente: ${d.trabajo.tipo})` : d.trabajo ? `En curso: ${d.trabajo.tipo}…` : "Último trabajo";
+  $("#log").textContent = d.log || "Todavía no se corrió ningún trabajo.";
+
+  // Rendimiento: estructura lista para cuando se automatice (las métricas de Pixiv se suman en la fase 2) + stock.
+  const m = P.metricas, max = Math.max(...P.stock.map((s) => s.imagenes), 1);
+  $("#rend-act").textContent = m.posts ? `${m.posts} post(s) con métricas${m.actualizado ? `, al ${new Date(m.actualizado).toLocaleString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}` : ""}` : "todavía sin métricas";
+  $("#metricas").hidden = false;
+  $("#metricas").disabled = !!ocup("pixiv-chrome");
+  $("#metricas").title = ocup("pixiv-chrome") ? `Esperá que termine: ${ocup("pixiv-chrome").tipo}` : "Lee vistas, likes, marcadores y comentarios de cada post (solo lectura)";
+  // Sin métricas todavía: una línea en vez de cuatro "s/d" y un bloque vacío; el stock se muestra igual.
+  $("#rend").innerHTML = `
+    ${m.posts ? `<div class="kpis cuatro">
+      <div class="dato"><b class="mono">${num(m.vistas)}</b><small>vistas</small></div>
+      <div class="dato"><b class="mono">${num(m.likes)}</b><small>likes</small></div>
+      <div class="dato"><b class="mono">${num(m.marcadores)}</b><small>marcadores (bookmarks)</small></div>
+      <div class="dato"><b class="mono">${num(m.comentarios)}</b><small>comentarios</small></div>
+    </div>` : `<p class="linea-vacia"><b>Todavía sin métricas de Pixiv.</b> Se leen solas cada 6 horas al abrir el panel, o con Actualizar métricas.</p>`}
+    <div class="rend-grilla">
+      <div class="bloque" style="grid-column: ${m.posts ? "span 2" : "1 / -1"}"><h3>Imágenes sin usar en Pixiv, por personaje</h3>
+        <div class="stock">${P.stock.map((s) => `<span class="lbl" style="font-weight:550">${esc(NOMBRE_PJ(s.personaje))}</span><span class="barra-m" role="img" aria-label="${s.imagenes} imágenes"><i class="${s.patreon ? "pat" : ""}" style="width:${(100 * s.imagenes) / max}%"></i></span><small class="mono">${s.posts} posts</small>`).join("")}</div>
+        <p class="nota">En color, los personajes con pack en Patreon: salen primero. Cada post usa 3 imágenes.</p></div>
+      ${m.posts ? `<div class="bloque"><h3>Por personaje (promedio por post)</h3>${(() => { const mx = Math.max(...m.por_personaje.map((x) => x.vistas_prom), 1); return m.por_personaje.map((x, i) => `<div class="comp"><span class="lbl">${esc(NOMBRE_PJ(x.personaje))}</span><span class="barra-m" role="img" aria-label="${x.vistas_prom} vistas de promedio"><i class="${i === 0 && m.por_personaje.length > 1 ? "top" : ""}" style="width:${(100 * x.vistas_prom) / mx}%"></i></span><span class="det">${num(x.vistas_prom)} vistas, ${x.marcadores_prom.toLocaleString("es-AR")} marcadores (${x.posts} post${x.posts === 1 ? "" : "s"})</span></div>`).join(""); })()}
+        <h3 style="margin-top:14px">Mejores posts</h3>${m.mejores.map((p) => `<div class="mejor"><img src="${p.img}" alt="" loading="lazy"><div><p>${esc(NOMBRE_PJ(p.personaje))}: ${esc(p.titulo)}</p><small>${num(p.vistas)} vistas, ${num(p.marcadores)} marcadores${p.link ? `, <a href="${esc(p.link)}" target="_blank" rel="noopener">ver</a>` : ""}</small></div></div>`).join("")}
+        <p class="nota">Los posts nuevos todavía están sumando vistas: con pocos posts por personaje, tomalo como tendencia.</p></div>` : ""}
+    </div>`;
+
+  pintarPublicados(P.publicados ?? [], "Pixiv");
+  pintarInteraccion(P.interaccion);
+  pintarConcursos(P.concursos);
+  const cont = $("#lotes");
+  if (!P.lotes.length) { cont.innerHTML = `<div class="vacio"><b>Todavía no hay lotes de Pixiv</b>Tocá <b style="display:inline">Generar lote de Pixiv</b>: arma ${P.conf.posts_por_lote} posts de 3 imágenes desde el Backlog.</div>`; return; }
+  if (!lotePx || !P.lotes.some((l) => l.lote === lotePx)) lotePx = P.lotes[0].lote;
+  const l = P.lotes.find((x) => x.lote === lotePx);
+  const pub = l.piezas.filter((p) => !p.bloqueada);
+  const conProb = pub.filter((p) => p.problemas.length).length;
+  const subidos = l.piezas.some((p) => ["PUBLICADO", "SUBIENDO"].includes(p.pixiv?.estado));
+  const est = !l.revisado ? ["error", "Sin revisión"] : l.aprobado?.vigente ? ["ok", "Aprobado"] : l.aprobado ? ["aviso", "Cambió después de aprobarlo"] : ["aviso", "Esperando tu aprobación"];
+  cont.innerHTML = `
+  <section class="lote" aria-labelledby="tit-lote">
+    <div class="barra">
+      <h2 id="tit-lote">Lote de Pixiv</h2>
+      <select id="sel-lote-px" aria-label="Elegir lote de Pixiv">${P.lotes.map((x) => `<option value="${esc(x.lote)}" ${x.lote === lotePx ? "selected" : ""}>Lote ${esc(x.lote)}</option>`).join("")}</select>
+      <span class="etq ${est[0]}">${est[1]}</span>
+      <span class="etq">${pub.length} para publicar</span>
+      ${l.piezas.length - pub.length ? `<span class="etq error">${l.piezas.length - pub.length} bloqueados</span>` : ""}
+      ${conProb ? `<span class="etq error">${conProb} con problemas</span>` : ""}
+      <div class="der">
+        ${subidos ? `<small style="color:var(--suave)">Ya hay posts en Pixiv: el lote no se edita entero.</small>`
+          : l.aprobado?.vigente ? `<button class="btn" id="px-desaprobar">Anular aprobación</button>`
+          : `<button class="btn principal" id="px-aprobar" ${conProb || !l.revisado || !pub.length ? "disabled" : ""}>Aprobar lote</button>`}
+      </div>
+    </div>
+    ${(() => { const orden = porFecha(l.piezas); const ya = orden.filter((p) => p.pixiv?.estado === "PUBLICADO"), resto = orden.filter((p) => p.pixiv?.estado !== "PUBLICADO");
+      return (resto.length ? `<div class="grilla">${resto.map((p) => tarjetaPx(l, p, hoy)).join("")}</div>` : `<p class="linea-vacia" style="margin-top:16px">Ya salieron todos los posts de este lote.</p>`) + (ya.length ? `<details class="concursos lote-pub"><summary>Ya publicados en Pixiv (${ya.length})</summary><div class="pub-lista" style="border:0;border-top:1px solid var(--borde);border-radius:0">${ya.map((p) => filaPublicada(p, p.pixiv, p.imgs[0], `${NOMBRE_PJ(p.personaje)}: ${p.titulo}`, p.ar ? `${p.ar} ARG` : "", "Pixiv", null)).join("")}</div></details>` : ""); })()}
+  </section>`;
+}
+function tarjetaPx(l, p, hoy) {
+  const ok = !!l.aprobado?.vigente;
+  const e = estadoPx(p, ok, hoy);
+  const fijo = p.pixiv?.estado === "PUBLICADO" || (p.pixiv?.estado === "SUBIENDO" && Date.now() - Date.parse(p.pixiv.desde) < 30 * 60e3);
+  const editable = !fijo && !ok;
+  return `
+  <article class="pieza ${p.bloqueada ? "bloqueada" : ""}" data-n="${p.n}">
+    <div class="tira">${p.imgs.map((src, k) => `<img src="${src}" alt="Imagen ${k + 1} del post ${p.n}" loading="lazy" data-full="${src}">`).join("")}${p.imgs.length < 3 ? `<div class="vacia">faltan imágenes</div>` : ""}</div>
+    <div class="cuerpo">
+      <div class="meta">
+        <span class="cuando mono">${p.bloqueada ? "no se publica" : p.ar ? `${p.ar} ARG` : "sin fecha"}</span>
+        <input class="pj" aria-label="Personaje del post ${p.n}" value="${esc(p.personaje)}" ${editable ? "" : "readonly"} data-px="personaje">
+        ${p.patreon ? `<span class="etq pat" title="Tiene pack en Patreon">Pack en Patreon</span>` : ""}
+        ${p.sugerente == null ? "" : editable
+          ? `<button class="etq" data-px-sugerente="${p.sugerente ? 0 : 1}" title="Respuesta a &quot;Adult content&quot; en Pixiv. Tocá para cambiarla.">${p.sugerente ? "Sugerente" : "Todo público"} ⇄</button>`
+          : `<span class="etq" title="Respuesta a &quot;Adult content&quot; en Pixiv">${p.sugerente ? "Sugerente" : "Todo público"}</span>`}
+        ${p.bloqueada ? `<span class="etq error">Bloqueado</span>` : ""}
+        ${e ? `<span class="etq est ${e[0]}">${e[1]}</span>` : ""}
+      </div>
+      ${p.pixiv?.metricas ? `<div class="metricas">${Object.entries(p.pixiv.metricas).map(([k, v]) => `<span><b class="mono">${num(v)}</b> ${esc(k)}</span>`).join("")}</div>` : ""}
+      ${p.bloqueada && p.motivo ? `<ul class="lista error"><li>${esc(p.motivo)}</li></ul>` : ""}
+      ${p.pixiv?.error ? `<ul class="lista error"><li>${esc(p.pixiv.error)}</li></ul>` : ""}
+      <input class="titulo" aria-label="Título del post ${p.n}" maxlength="32" value="${esc(p.titulo)}" ${editable ? "" : "readonly"} data-px="titulo">
+      <textarea class="texto" aria-label="Descripción del post ${p.n}" ${editable ? "" : "readonly"} data-px="descripcion">${esc(p.descripcion)}</textarea>
+      <div class="tags" aria-label="Etiquetas">${p.etiquetas.map((t) => `<span>${esc(t)}</span>`).join("")}</div>
+      ${p.problemas.length ? `<ul class="lista error">${p.problemas.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${p.revision?.observaciones?.length && !p.bloqueada ? `<ul class="lista aviso">${p.revision.observaciones.map((x) => `<li>Revisión: ${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${p.idea ? `<p class="idea">${esc(p.idea)}</p>` : ""}
+      <div class="pie">
+        <small class="mono">${esc(p.id)}</small>
+        <span style="display:flex;gap:6px">
+        ${p.pixiv?.link ? `<a class="btn chico" href="${esc(p.pixiv.link)}" target="_blank" rel="noopener">Ver en Pixiv</a>`
+          : ok && !p.bloqueada && !fijo ? `<button class="btn chico ${p.manual ? "principal" : ""}" data-px-subir="${p.n}" ${ocup("pixiv-chrome") ? `disabled title="Esperá que termine: ${esc(ocup("pixiv-chrome").tipo)}"` : ""}>Subir a Pixiv</button>`
+          : editable ? `<button class="btn chico" data-px-bloquear="${p.bloqueada ? 0 : 1}">${p.bloqueada ? "Desbloquear" : "Bloquear"}</button>` : ""}
+        </span>
+      </div>
+    </div>
+  </article>`;
+}
+
+// Post ya publicado dentro del lote: fila compacta (foto, fecha, texto, métricas, Copiar y Ver). Ya no se edita.
+function filaPublicada(p, est, img, texto, cuando, nombreRed, nCopiar) {
+  const m = est?.metricas;
+  return `<div class="pub" data-n="${p.n}"><img src="${esc(img)}" alt="" loading="lazy" data-full="${esc(img)}"><span class="cuando">${esc(cuando)}</span>
+    <div style="min-width:0"><p>${esc(texto)}</p>${m ? `<div class="metricas">${(ORDEN_M.some((k) => k in m) ? ORDEN_M.filter((k) => k in m).map((k) => [NOMBRE_M[k], m[k], k === "engagementRate"]) : Object.entries(m).map(([k, v]) => [k, v, false])).map(([k, v, pc]) => `<span><b class="mono">${num(v, pc)}</b> ${esc(k)}</span>`).join("")}</div>` : ""}</div>
+    <span style="display:flex;gap:6px">${nCopiar != null ? `<button class="btn chico" data-copiar="${nCopiar}">Copiar</button>` : ""}${est?.link ? `<a class="btn chico" href="${esc(est.link)}" target="_blank" rel="noopener">Ver en ${esc(nombreRed)}</a>` : ""}</span></div>`;
+}
+// Las tarjetas van en el orden en que salen (fecha y hora); las que no tienen día, al final.
+const porFecha = (ps) => [...ps].sort((a, b) => (a.fecha ? `${a.fecha} ${a.hora ?? ""}` : "9999").localeCompare(b.fecha ? `${b.fecha} ${b.hora ?? ""}` : "9999") || a.n - b.n);
+function tarjeta(l, p, fijo, orden = p.n) {
+  const R = RED(), est = p[R.clave];
+  const antes = !est && p.antes?.[R.clave]; // salió antes de sumar esta red
+  const ex = est && ESTADO_X[est.estado];
+  const peso = R.clave === "bsky" ? p.peso_bsky : p.peso;
+  const editable = !fijo && !l.aprobado?.vigente;
+  return `
+  <article class="pieza ${p.bloqueada ? "bloqueada" : ""}" data-n="${p.n}">
+    <div class="foto"><img src="${p.img}" alt="${esc(p.alt || "Imagen del post " + p.n)}" loading="lazy" data-full="${p.img}"><span class="n mono" title="Orden de salida en este lote (post ${p.n} del lote)">${p.fecha ? `${orden}°` : `#${p.n}`}</span></div>
+    <div class="cuerpo">
+      <div class="meta">
+        <span class="cuando mono">${p.bloqueada ? "no se publica" : !p.fecha && l.tipo === "backlog" ? "en reserva" : `${fechaAR(p.fecha, p.hora, p.zona ?? ZONA_PUB)} ARG`}</span>
+        <span class="etq">${CTA[p.cta] ?? esc(p.cta)}</span>
+        <input class="pj" aria-label="Personaje del post ${p.n}" title="Personaje (para no repetirlo dos días seguidos)" placeholder="personaje" value="${esc(p.personaje)}" ${editable && !(l.tipo === "backlog" && p.fecha) ? "" : "readonly"} data-campo="personaje">
+        ${p.bloqueada ? `<span class="etq error">Bloqueada</span>` : ""}
+        ${ex ? `<span class="etq est ${ex[0]}" title="${esc(est.motivo || est.error || "")}">${ex[1]}</span>` : antes ? `<span class="etq" title="Este post salió antes de sumar ${esc(R.nombre)}">Solo en X</span>` : ""}
+      </div>
+      ${est?.metricas ? `<div class="metricas" aria-label="Métricas del post en ${esc(R.nombre)}">${ORDEN_M.filter((k) => k in est.metricas).map((k) => `<span><b class="mono">${num(est.metricas[k], k === "engagementRate")}</b> ${NOMBRE_M[k]}</span>`).join("")}</div>` : ""}
+      ${p.bloqueada && p.motivo ? `<ul class="lista error"><li>${esc(p.motivo)}</li></ul>` : ""}
+      ${est && ["FALLIDO", "BLOQUEADO", "VENCIDO", "EN ESPERA"].includes(est.estado) ? `<ul class="lista ${est.estado === "EN ESPERA" ? "aviso" : "error"}"><li>${esc(est.motivo || est.error || (est.estado === "VENCIDO" ? "La hora pasó antes de programarlo." : ""))}</li></ul>` : ""}
+      <textarea class="texto" aria-label="Texto del post ${p.n}" ${editable ? "" : "readonly"} data-campo="texto">${esc(p.texto)}</textarea>
+      <div class="contador mono ${peso > R.limite ? "mal" : ""}">${peso}/${R.limite}</div>
+      ${p.problemas.length ? `<ul class="lista error">${p.problemas.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${p.revision?.observaciones?.length && !p.bloqueada ? `<ul class="lista aviso">${p.revision.observaciones.map((x) => `<li>Revisión: ${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${p.idea ? `<p class="idea">${esc(p.idea)}</p>` : ""}
+      <details class="alt"><summary>Texto alternativo</summary><textarea aria-label="Texto alternativo del post ${p.n}" ${editable ? "" : "readonly"} data-campo="alt">${esc(p.alt)}</textarea></details>
+      <div class="pie">
+        <small class="mono">${esc(p.id)}</small>
+        <span style="display:flex;gap:6px">${p.texto ? `<button class="btn chico" data-copiar="${p.n}">Copiar</button>` : ""}
+        ${est?.link ? `<a class="btn chico" href="${esc(est.link)}" target="_blank" rel="noopener">Ver en ${esc(R.nombre)}</a>`
+          : editable ? `<button class="btn chico" data-bloquear="${p.bloqueada ? 0 : 1}">${p.bloqueada ? "Desbloquear" : "Bloquear"}</button>` : ""}</span>
+      </div>
+    </div>
+  </article>`;
+}
+
+document.addEventListener("change", async (e) => {
+  if (e.target.id === "sel-lote") { loteSel = e.target.value; pintar(); return; }
+  if (e.target.id === "sel-lote-px") { lotePx = e.target.value; pintar(); return; }
+  const px = e.target.dataset.px;
+  if (px) {
+    await api("pixiv_texto", { lote: lotePx, n: +e.target.closest(".pieza").dataset.n, [px]: e.target.value });
+    e.target.blur();
+    await cargar(true);
+    return;
+  }
+  const campo = e.target.dataset.campo;
+  if (!campo) return;
+  const n = +e.target.closest(".pieza").dataset.n;
+  await api("texto", { lote: loteSel, n, [campo]: e.target.value });
+  e.target.blur();
+  await cargar(true);
+});
+document.addEventListener("input", (e) => {
+  if (e.target.dataset.campo !== "texto") return;
+  const c = e.target.closest(".pieza").querySelector(".contador");
+  c.textContent = "editando…";
+});
+document.addEventListener("click", async (e) => {
+  const t = e.target.closest("button, img[data-full]");
+  if (!t) return;
+  if (t.dataset.red) { elegirRed(t.dataset.red); return; }
+  if (t.dataset.full) { $("#visor").innerHTML = `<img src="${t.dataset.full}" alt="${esc(t.alt)}">`; $("#visor").showModal(); return; }
+  if (t.id === "px-aprobar") { await api("pixiv_aprobar", { lote: lotePx }); aviso("Lote de Pixiv aprobado. Cada día, el post de ese día aparece para subir."); }
+  else if (t.id === "px-desaprobar") await api("pixiv_desaprobar", { lote: lotePx });
+  else if (t.dataset.pxSubir) { await api("pixiv_subir", { lote: lotePx, n: +t.dataset.pxSubir }); aviso("Abriendo Pixiv con todo cargado. Revisalo en la ventana de Chrome y tocá Post."); }
+  else if (t.dataset.pxSugerente) await api("pixiv_texto", { lote: lotePx, n: +t.closest(".pieza").dataset.n, sugerente: t.dataset.pxSugerente === "1" });
+  else if (t.dataset.pxBloquear) await api("pixiv_bloquear", { lote: lotePx, n: +t.closest(".pieza").dataset.n, bloquear: t.dataset.pxBloquear === "1" });
+  else if (t.dataset.rdCopiar !== undefined) { await navigator.clipboard.writeText(t.dataset.rdCopiar); aviso("Copiado."); return; }
+  else if (t.dataset.rdReglas !== undefined) { rdReglasAbierto = t.dataset.rdReglas || null; pintar(); if (rdReglasAbierto) $("#rd-reglas")?.focus(); return; }
+  else if (t.dataset.rdClasificar) { await api("reddit_reglas", { sub: t.dataset.rdClasificar, texto: $("#rd-reglas").value }); rdReglasAbierto = null; aviso("Leyendo las reglas. Tarda un minuto."); }
+  else if (t.dataset.rdPreparar) { await api("reddit_preparar", { sub: t.dataset.rdPreparar }); aviso("Preparando el post: elijo la imagen y escribo el título."); }
+  else if (t.dataset.rdSub) await api("reddit_sub_estado", { sub: t.closest(".rd-sub").dataset.sub, estado: t.dataset.rdSub });
+  else if (t.dataset.rdPostEstado) await api("reddit_post_estado", { id: t.closest(".rd-post").dataset.rdPost, estado: t.dataset.rdPostEstado });
+  else if (t.id === "so-nuevo") { soFormAbierto = !soFormAbierto; pintarSorteos(); if (soFormAbierto) $("#so-form [name=titulo]")?.focus(); return; }
+  else if (t.id === "so-conectar") { await api("x_conectar"); aviso("Se abre el navegador: autorizá la app con {{X}}."); }
+  else if (t.dataset.soEstimar) { await api("sorteo_estimar", { id: t.dataset.soEstimar }); aviso("Calculando el costo en X (unos centavos)."); }
+  else if (t.dataset.soRevisar) {
+    const costo = t.dataset.costo;
+    if (costo && !confirm(`Revisar este sorteo en X cuesta aproximadamente ${costo} USD de la API. ¿Confirmás el gasto?`)) return;
+    await api("sorteo_revisar", { id: t.dataset.soRevisar, costo: costo ? +costo : undefined }); aviso("Revisando participantes. Tarda uno o dos minutos.");
+  }
+  else if (t.dataset.soFinalizar) {
+    const costo = t.dataset.costo;
+    if (!confirm(`¿Finalizar ahora? Reviso los participantes de este momento y sorteo enseguida. El resultado queda fijo.${costo ? `
+
+En X cuesta aproximadamente ${costo} USD de la API.` : ""}`)) return;
+    await api("sorteo_revisar", { id: t.dataset.soFinalizar, costo: costo ? +costo : undefined, finalizar: true }); aviso("Finalizando: reviso participantes y sorteo. Tarda uno o dos minutos.");
+  }
+  else if (t.dataset.soSortear) { if (!confirm("¿Sorteamos ahora? El resultado queda fijo y registrado.")) return; await api("sorteo_sortear", { id: t.dataset.soSortear }); aviso("Sorteando."); }
+  else if (t.dataset.soAnular) { if (!confirm("¿Anular este sorteo? Deja de verse en el panel (el archivo queda guardado como anulado).")) return; await api("sorteo_anular", { id: t.dataset.soAnular }); }
+  else if (t.id === "xr-pedido") { await navigator.clipboard.writeText(pedidoGrok()); aviso("Pedido copiado. Pegalo en Grok (siempre en el mismo chat)."); return; }
+  else if (t.id === "xr-pedido-nav") { await navigator.clipboard.writeText(pedidoNavegador()); aviso("Pedido copiado. Abrí x.com con la cuenta de la marca y pegalo en tu IA de navegador."); return; }
+  else if (t.id === "bs-sugerencias") { await api("bsky_sugerencias"); aviso("Buscando posts y cuentas en Bluesky. Tarda unos minutos."); }
+  else if (t.dataset.bsEstado) { const a = t.closest("[data-bs-id]"); await api("bsky_estado", { fecha: datos.bsky_inter.fecha, tipo: a.dataset.bsTipo, id: a.dataset.bsId, estado: t.dataset.bsEstado }); }
+  else if (t.dataset.todoHecho) await todoHecho(t.dataset.todoHecho);
+  else if (t.dataset.xrEstado) await api("x_respuesta_estado", { id: t.closest("[data-xr]").dataset.xr, estado: t.dataset.xrEstado });
+  else if (t.id === "px-concursos") { await api("pixiv_concursos"); aviso("Leyendo las bases de los concursos. Tarda unos minutos."); }
+  else if (t.dataset.concCopiar) { await navigator.clipboard.writeText(t.dataset.concCopiar); aviso("Etiqueta copiada."); return; }
+  else if (t.id === "px-sugerencias") { await api("pixiv_sugerencias"); aviso("Buscando obras afines y escribiendo comentarios. Tarda unos minutos."); }
+  else if (t.dataset.interCopiar) { const o = datos.pixiv.interaccion.obras.find((x) => x.id === t.dataset.interCopiar); await navigator.clipboard.writeText(o.comentario_en); aviso("Comentario copiado. Pegalo en la obra si te convence."); return; }
+  else if (t.dataset.inter) await api("interaccion_estado", { fecha: datos.pixiv.interaccion.fecha, id: t.closest(".obra").dataset.obra, estado: t.dataset.inter });
+  else if (t.id === "generar" && red === "pixiv") { await api("pixiv_generar"); aviso("Armando el lote de Pixiv. Tarda unos minutos."); }
+  else if (t.id === "aprobar") { await api("aprobar", { lote: loteSel }); aviso(`Lote aprobado. Se programa en ${datos.redes.map((r) => r.nombre).join(" y ")} en la próxima corrida, o tocá Programar.`); }
+  else if (t.id === "desaprobar") await api("desaprobar", { lote: loteSel });
+  else if (t.id === "revisar") { await api("revisar", { lote: loteSel }); aviso("Revisión en marcha. Tarda unos minutos."); }
+  else if (t.id === "detener") await api("detener", { grupo: datos.trabajo?.grupo });
+  else if (t.id === "metricas" && red === "pixiv") { await api("pixiv_metricas"); aviso("Leyendo las métricas de Pixiv."); }
+  else if (t.id === "metricas") { await api("metricas"); aviso("Pidiendo las métricas a Buffer."); }
+  else if (t.dataset.copiar) { const p = datos.lotes.find((l) => l.lote === loteSel).piezas.find((x) => x.n === +t.dataset.copiar); await navigator.clipboard.writeText(p.final); aviso("Texto copiado (con el link, si lleva)."); return; }
+  else if (t.dataset.bloquear) await api("bloquear", { lote: loteSel, n: +t.closest(".pieza").dataset.n, bloquear: t.dataset.bloquear === "1" });
+  else if (t.id === "generar") { await api("generar"); aviso("Generando el lote. Tarda unos minutos."); }
+  else if (t.id === "programar") await api("programar");
+  else if (t.id === "abrir") return api("abrir");
+  else if (t.id === "auto") await api("automatizacion", { activa: t.getAttribute("aria-checked") !== "true" });
+  else if (t.id === "cerrar") { await api("cerrar"); document.body.innerHTML = "<p style='padding:24px'>Panel cerrado. Podés cerrar esta pestaña.</p>"; return; }
+  else return;
+  await cargar(true);
+});
+$("#visor").addEventListener("click", () => $("#visor").close());
+$("#rd-buscar-form").addEventListener("submit", async (e) => { e.preventDefault(); const v = $("#rd-tema").value.trim(); if (!v) return; await api("reddit_buscar", { tema: v }); $("#rd-tema").value = ""; aviso("Buscando subreddits. Tarda uno o dos minutos."); cargar(true); });
+$("#rd-agregar-form").addEventListener("submit", async (e) => { e.preventDefault(); const v = $("#rd-nuevo").value.trim(); if (!v) return; await api("reddit_sub_agregar", { sub: v }); $("#rd-nuevo").value = ""; cargar(true); });
+document.addEventListener("submit", async (e) => {
+  if (e.target.id !== "so-form") return;
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const cierre = f.get("cierre") ? new Date(f.get("cierre")).toISOString() : null;
+  await api("sorteo_crear", { red, titulo: f.get("titulo"), post: f.get("post"), condiciones: f.getAll("cond"), ganadores: +f.get("ganadores"), suplentes: +f.get("suplentes"), cuenta_min_dias: +(f.get("dias") ?? 0), cierre });
+  soFormAbierto = false; aviso("Sorteo creado. Cuando cierre, tocá Revisar participantes."); cargar(true);
+});
+// Limpiar historial del traductor: dos toques (el primero pide confirmar; a los 4 segundos vuelve a su estado).
+$("#xt-limpiar").addEventListener("click", async (e) => {
+  const b = e.currentTarget;
+  if (!b.dataset.confirmar) {
+    b.dataset.confirmar = "1"; b.textContent = "¿Borrar todo? Tocá de nuevo"; b.classList.add("peligro");
+    setTimeout(() => { delete b.dataset.confirmar; b.textContent = "Limpiar historial"; b.classList.remove("peligro"); }, 4000);
+    return;
+  }
+  delete b.dataset.confirmar; b.textContent = "Limpiar historial"; b.classList.remove("peligro");
+  await api("x_traducciones_limpiar", {}); aviso("Historial del traductor borrado."); cargar(true);
+});
+$("#xt-form").addEventListener("submit", async (e) => { e.preventDefault(); const v = $("#xt-texto").value.trim(); if (!v) return; await api("x_traducir", { texto: v, tipo: document.querySelector("input[name=xt-tipo]:checked")?.value ?? "post" }); $("#xt-texto").value = ""; aviso("Pasando al inglés con la voz de la marca."); cargar(true); });
+$("#xr-form").addEventListener("submit", async (e) => { e.preventDefault(); const v = $("#xr-texto").value.trim(); if (!v) return; await api("x_respuestas", { texto: v }); $("#xr-texto").value = ""; aviso("Escribiendo respuestas para X."); cargar(true); });
+$("#r34-clave-form").addEventListener("submit", async (e) => { e.preventDefault(); const key = $("#r34-key").value.trim(), uid = $("#r34-uid").value.trim(); if (!key || !uid) return aviso("Completá el user_id y la API key."); await api("r34_clave", { api_key: key, user_id: uid }); $("#r34-key").value = ""; aviso("Key guardada en el archivo de claves. La pruebo con un pedido mínimo (mirá Último trabajo)."); cargar(true); });
+$("#r34-form").addEventListener("submit", async (e) => { e.preventDefault(); await api("r34_analisis", { nicho: $("#r34-nicho").value.trim() }); aviso("Actualizando el análisis de Rule34: tarda unos minutos."); cargar(true); });
+$("#r34-prep-form").addEventListener("submit", async (e) => { e.preventDefault(); const c = $("#r34-carpeta").value.trim(), so = $("#r34-source").value.trim(); if (!c || !so) return aviso("Completá la carpeta y el source."); await api("r34_preparar", { carpeta: c, source: so }); aviso("Preparando las subidas: miro cada imagen y armo título, etiquetas y rating."); cargar(true); });
+// Historial de interacción: lo resuelto (Hecho o Saltar) de todos los días, en lista compacta, fuera de la vista principal.
+let histRed = null, histFiltro = "todo";
+const HIST_TIT = { pixiv: "Historial de Pixiv", bsky: "Historial de Bluesky", x: "Historial de X" };
+async function pintarHist() {
+  const { filas } = await api("historial", { red: histRed });
+  const n = (e) => filas.filter((x) => x.estado === e).length;
+  $("#hist-tit").textContent = HIST_TIT[histRed];
+  $("#hist-filtros").innerHTML = [["todo", `Todo (${filas.length})`], ["hecho", `Hechos (${n("hecho")})`], ["saltado", `Saltados (${n("saltado")})`]].map(([k, t]) => `<button class="btn chico${histFiltro === k ? " principal" : ""}" data-hist-filtro="${k}">${t}</button>`).join("");
+  const L = filas.filter((x) => histFiltro === "todo" || x.estado === histFiltro);
+  const cuando = (iso) => iso ? new Date(iso).toLocaleString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }) : "";
+  $("#hist-lista").innerHTML = L.length ? `<ul class="hist">${L.map((x) => `<li>
+    ${x.mini ? `<img src="${esc(x.mini)}" alt="" loading="lazy" data-full="${esc(x.mini)}">` : `<span class="hist-sin">${x.tipo === "cuenta" ? "@" : "–"}</span>`}
+    <div class="hist-txt"><div><b>${esc(x.titulo)}</b> <span class="etq est ${x.estado === "hecho" ? "ok" : "neutro"}">${x.estado === "hecho" ? (x.tipo === "cuenta" ? "Seguida" : "Hecho") : "Saltado"}</span></div>
+      <div class="dato-c">${esc(cuando(x.cuando))}${x.sub ? ` · ${esc(x.sub)}` : ""}</div>
+      ${x.texto ? `<div class="hist-com" lang="en">${esc(x.texto)}</div>` : ""}</div>
+    <div class="hist-acc">${x.link ? `<a class="btn chico" href="${esc(x.link)}" target="_blank" rel="noopener">Abrir</a>` : ""}<button class="btn chico" data-hist-deshacer="${esc(x.id)}" data-tipo="${x.tipo}" data-fecha="${esc(x.fecha ?? "")}">Deshacer</button></div>
+  </li>`).join("")}</ul>` : `<div class="vacio"><b>Nada por acá todavía</b>Lo que marques Hecho o Saltar aparece en esta lista.</div>`;
+}
+document.addEventListener("click", async (e) => {
+  const t = e.target.closest("[data-hist],[data-hist-filtro],[data-hist-deshacer],#hist-cerrar");
+  if (!t) return;
+  if (t.id === "hist-cerrar") { $("#hist").close(); return; }
+  if (t.dataset.hist) { histRed = t.dataset.hist; histFiltro = "todo"; $("#hist-lista").innerHTML = `<div class="vacio"><b>Cargando…</b></div>`; $("#hist").showModal(); await pintarHist(); return; }
+  if (t.dataset.histFiltro) { histFiltro = t.dataset.histFiltro; await pintarHist(); return; }
+  const { histDeshacer: id, tipo, fecha } = t.dataset;
+  if (histRed === "pixiv") await api("interaccion_estado", { fecha, id, estado: "pendiente" });
+  else if (histRed === "bsky") await api("bsky_estado", { fecha, tipo, id, estado: "pendiente" });
+  else await api("x_respuesta_estado", { id, estado: "pendiente" });
+  aviso("Volvió a la lista de pendientes.");
+  await pintarHist(); cargar(true);
+});
+// Pixiv: "Publicar ahora" en un post que no salió a su hora (corre la misma subida automática).
+document.addEventListener("click", async (e) => {
+  const t = e.target.closest("[data-px-publicar]");
+  if (!t) return;
+  if (t.dataset.fallido === "1" && !confirm("Pixiv no confirmó si este post salió. Antes de reintentar, mirá tu perfil de Pixiv: si ya está publicado, se duplicaría. ¿Publicar igual?")) return;
+  const [lote, n] = t.dataset.pxPublicar.split("|");
+  t.disabled = true;
+  try { await api("pixiv_publicar", { lote, n: +n }); aviso("Publicando en Pixiv: se abre Chrome, carga todo y toca Post solo. Tarda un par de minutos."); } catch {} finally { cargar(true); }
+});
+document.addEventListener("click", async (e) => {
+  const t = e.target.closest("[data-r34-copiar],[data-r34-abrir],[data-r34-marcar]");
+  if (!t) return;
+  if (t.dataset.r34Copiar != null) { await navigator.clipboard.writeText(t.dataset.r34Copiar); aviso("Copiado."); return; }
+  if (t.dataset.r34Abrir) { await api("r34_abrir", { id: t.dataset.r34Abrir }); return; }
+  if (t.dataset.r34Marcar) {
+    let post_id = null;
+    if (t.dataset.estado === "subido") { post_id = prompt("Si ya aparece, pegá el link o el número del post (si no, dejalo vacío):", "") ?? ""; }
+    await api("r34_marcar", { id: t.dataset.r34Marcar, estado: t.dataset.estado, post_id });
+    cargar(true);
+  }
+});
+$("#r34-nicho").addEventListener("input", (e) => { e.target.dataset.tocado = "1"; });
+$("#rd-com-form").addEventListener("submit", async (e) => { e.preventDefault(); const v = $("#rd-post").value.trim(); if (!v) return; await api("reddit_comentario", { texto: v }); $("#rd-post").value = ""; aviso("Escribiendo comentarios."); cargar(true); });
+function elegirRed(clave) {
+  red = clave;
+  try { localStorage.setItem("red", red); } catch {}
+  pintar();
+  $(`#redes [data-red="${red}"]`)?.focus();
+}
+$("#redes").addEventListener("keydown", (e) => {
+  if (!["ArrowLeft", "ArrowRight"].includes(e.key)) return;
+  const cl = TABS().map((r) => r.clave), i = cl.indexOf(red);
+  elegirRed(cl[(i + (e.key === "ArrowRight" ? 1 : cl.length - 1)) % cl.length]);
+});
+// Hoy, índice, trabajo en curso, ayuda de Grok, Reddit en pausa y key de Rule34.
+document.addEventListener("click", async (e) => {
+  const h = e.target.closest("[data-hoy]");
+  if (h) { const [r, destino] = JSON.parse($("#hoy").dataset.tareas)[+h.dataset.hoy]; if (r !== red) elegirRed(r); requestAnimationFrame(() => requestAnimationFrame(() => irA(destino))); return; }
+  const a = e.target.closest("[data-ir]");
+  if (a) { e.preventDefault(); irA(a.dataset.ir); return; }
+  const jd = e.target.closest("[data-job-detener]");
+  if (jd) { await api("detener", { grupo: jd.dataset.jobDetener }); aviso("Trabajo detenido."); cargar(true); return; }
+  if (e.target.closest("#rd-ver-todo")) { $("#sec-reddit").classList.toggle("ver"); e.target.closest("#rd-ver-todo").textContent = $("#sec-reddit").classList.contains("ver") ? "Ocultar subreddits y herramientas" : "Ver subreddits y herramientas igual"; requestAnimationFrame(pintarIndice); return; }
+  if (e.target.closest("#r34-cambiar")) { $("#r34-clave-form").hidden = !$("#r34-clave-form").hidden; $("#r34-cambiar").textContent = $("#r34-clave-form").hidden ? "Cambiar key" : "Cancelar"; return; }
+});
+$("#xr-ayuda").addEventListener("toggle", () => { try { localStorage.setItem("pleg:xr-ayuda", $("#xr-ayuda").open ? "1" : "0"); } catch {} });
+// Índice: marca la sección que se está viendo.
+addEventListener("scroll", () => {
+  const links = [...document.querySelectorAll("#indice a")];
+  let act = null;
+  for (const l of links) { const el = document.getElementById(l.dataset.ir); if (el && el.getBoundingClientRect().top < 120) act = l; }
+  for (const l of links) l.classList.toggle("activo", l === act);
+}, { passive: true });
+cargar(true);
+setInterval(() => cargar(), 15000);
+setInterval(() => datos?.trabajos?.length && cargar(), 4000);
+</script>
+</body>
+</html>
